@@ -1,0 +1,338 @@
+# AnyLink
+
+[![Go](https://github.com/cherts/anylink/workflows/Go/badge.svg?branch=main)](https://github.com/cherts/anylink/actions)
+[![PkgGoDev](https://pkg.go.dev/badge/github.com/cherts/anylink)](https://pkg.go.dev/github.com/cherts/anylink)
+[![Go Report Card](https://goreportcard.com/badge/github.com/cherts/anylink)](https://goreportcard.com/report/github.com/cherts/anylink)
+[![codecov](https://codecov.io/gh/cherts/anylink/branch/master/graph/badge.svg?token=JTFLIIIBQ0)](https://codecov.io/gh/cherts/anylink)
+![GitHub release](https://img.shields.io/github/v/release/cherts/anylink)
+![GitHub downloads)](https://img.shields.io/github/downloads/cherts/anylink/total)
+[![Docker pulls)](https://img.shields.io/docker/pulls/cherts/anylink.svg)](https://hub.docker.com/r/cherts/anylink)
+![LICENSE](https://img.shields.io/github/license/cherts/anylink)
+
+AnyLink is an enterprise-level remote office sslvpn software that can support multiple people using it online at the same time.
+
+## Repo
+
+> github: https://github.com/cherts/anylink
+
+> gitee: https://gitee.com/cherts/anylink
+
+## Introduction
+
+AnyLink is based on [ietf-openconnect](https://tools.ietf.org/html/draft-mavrogiannopoulos-openconnect-02)
+Protocol development, and draws on the development ideas of [ocserv](http://ocserv.gitlab.io/www/index.html) to make it compatible with the AnyConnect client at the same time.
+
+AnyLink uses TLS/DTLS for data encryption, so an RSA or ECC certificate is required. You can apply for a free SSL certificate through Let's Encrypt and TrustAsia.
+
+The AnyLink server is only tested on CentOS 7, CentOS 8, Ubuntu 18.04, and Ubuntu 20.04. If it needs to be installed on other systems, the server needs to support tun/tap.
+Function, ip setting command.
+
+## Screenshot
+
+![online](doc/screenshot/home.jpg)
+
+## Installation
+
+> Students without programming foundation are recommended to download the release package directly and download anylink-deploy.tar.gz from the address below.
+>
+> https://github.com/cherts/anylink/releases
+
+### Usage issues
+
+> For the test environment, you can use vpn.test.vqilu.cn to bind the host for testing
+>
+> For online environments, you must apply for a secure https certificate, and private certificate connections are not supported.
+>
+> Server installation yum install iproute or apt-get install iproute2
+>
+> Please use the version of the group shared file for the client. Other versions have not been tested and are not guaranteed to work properly.
+>
+> Other questions [Go to view](doc/question.md)
+>
+> For first time use, please visit https://domain name:443 in the browser. After the browser prompts that it is safe, enter [domain name: 443] on the client.
+
+### Compile and install by yourself
+
+> Golang >= 1.19 and nodejs >= 16.x and yarn >= v1.22.x need to be installed in advance.
+
+```shell
+git clone https://github.com/cherts/anylink.git
+
+# Compile reference software version
+# go 1.20.12
+# node v16.20.2
+# yarn 1.22.19
+
+
+cd anylink
+sh build.sh
+
+# Make sure to run with root privileges
+cd anylink-deploy
+sudo ./anylink
+
+# Default management background access address
+# Note that the host is the internal network IP of anylink and cannot be the same as the IP requested by the client.
+# https://host:8800
+# Default account password
+# admin 123456
+
+
+```
+
+## Feature
+
+- [x] IP allocation (implementing persistence of IP and MAC mapping information)
+- [x] TLS-TCP tunnel
+- [x] DTLS-UDP channel
+- [x] Compatible with AnyConnect
+- [x] Compatible with OpenConnect
+- [x] Nat access mode based on tun device
+- [x] Tap device based bridge access mode
+- [x] Bridged access mode based on macvtap device
+- [x] Support [proxy protocol v1&v2](http://www.haproxy.org/download/2.2/doc/proxy-protocol.txt) protocol
+- [x] User group support
+- [x] Multi-user support
+- [x] User policy support
+- [x] TOTP token support
+- [x] TOTP token switch
+- [x] Traffic rate limit
+- [x] Backend management interface
+- [x] Access rights management
+- [x] IP access audit function
+- [x] Domain name dynamic split tunnel (domain name routing function)
+- [x] radius authentication support
+- [x] LDAP authentication support
+- [ ] Bridge access mode based on ipvtap device
+
+## Config
+
+> There are detailed comments in the sample configuration file. Just fill in the configuration according to the comments.
+
+```shell
+# Generate admin password
+./anylink tool -p 123456
+
+# Generate JWT key
+./anylink tool -s
+```
+
+> Database configuration example
+
+| db_type  | db_source                                              |
+|----------|--------------------------------------------------------|
+| sqlite3  | ./conf/anylink.db                                      |
+| mysql    | user:password@tcp(127.0.0.1:3306)/anylink?charset=utf8 |
+| postgres | user:password@localhost/anylink?sslmode=verify-full    |
+
+> Sample configuration file
+>
+> [conf/server-sample.toml](server/conf/server-sample.toml)
+
+## Setting
+
+> One of the following parameters must be set
+
+To select the network mode, you need to configure the `link_mode` parameter, such as `link_mode="tun"`, `link_mode="macvtap"`, `link_mode="tap"(not recommended)` and other parameters.
+Different parameters require corresponding settings on the server.
+
+It is recommended to choose tun mode first, followed by macvtap mode, because the client transmits IP layer data and does not need to perform data conversion. tap mode is done in user mode at the link layer to
+Data at the IP layer is converted to each other, and performance will be degraded. If you need to enable tap in the virtual machine
+mode, please confirm that the virtual machine's network card is enabled in promiscuous mode.
+
+### tun settings
+
+1. Enable server forwarding
+
+```shell
+# file: /etc/sysctl.conf
+net.ipv4.ip_forward = 1
+
+# Execute command
+sysctl -w net.ipv4.ip_forward=1
+
+# Check whether the settings take effect
+cat /proc/sys/net/ipv4/ip_forward
+```
+
+2.1 Set nat forwarding rules (choose one of two)
+
+```shell
+systemctl stop firewalld.service
+systemctl disable firewalld.service
+
+# The new version supports automatic setting of NAT forwarding. If you have other needs, you can refer to the following command configuration.
+
+# Please replace eth0 according to the server's internal network card
+# iptables -t nat -A POSTROUTING -s 192.168.90.0/24 -o eth0 -j MASQUERADE
+# If the first command does not take effect, you can continue to execute the following command
+# iptables -A FORWARD -i eth0 -s 192.168.90.0/24 -j ACCEPT
+# Check whether the settings take effect
+# iptables -nL -t nat
+```
+
+2.2 Use global route forwarding (choose one of two)
+
+```shell
+# Assume the intranet IP of the server where anylink is located: 10.1.2.10
+
+# First turn off the nat forwarding function
+iptables_nat = false
+
+# For traditional network architecture, add the following static routing rules to the H3C switch
+ip route-static 192.168.90.0 255.255.255.0 10.1.2.10
+# For switch commands of other brands, please refer to the following address
+https://cloud.tencent.com/document/product/216/62007
+
+# In a public cloud environment, you need to set up the routing table under vpc and add the following routing policy
+Destination: 192.168.90.0/24
+Next hop type: Cloud server
+Next hop: 10.1.2.10
+
+```
+
+3. Just connect using the AnyConnect client
+
+### macvtap settings
+
+1. Setup profile
+
+> macvtap setting is relatively simple, you only need to configure the corresponding parameters.
+> The following parameters can be viewed by executing `ip a`
+
+```
+# First turn off the nat forwarding function
+iptables_nat = false
+
+# The master network card needs to turn on promiscuous mode
+ip link set dev eth0 promisc on
+
+# Internal network main network card name
+ipv4_master = "eth0"
+# The following network segments need to be set the same as the ipv4_master network card
+ipv4_cidr = "10.1.2.0/24"
+ipv4_gateway = "10.1.2.1"
+ipv4_start = "10.1.2.100"
+ipv4_end = "10.1.2.200"
+```
+
+## Systemd
+
+1. Add anylink program
+
+    - anylink program directory into `/usr/local/anylink-deploy`
+    - Add execution permissions `chmod +x /usr/local/anylink-deploy/anylink`
+
+2. systemd/anylink.service unit file put:
+
+    - centos: `/usr/lib/systemd/system/`
+    - ubuntu: `/lib/systemd/system/`
+
+3. Operation command:
+
+    - start up: `systemctl start anylink`
+    - stop: `systemctl stop anylink`
+    - Start automatically at boot: `systemctl enable anylink`
+
+## Docker
+
+1. Get image
+
+   ```bash
+   # Specific tags can be obtained from docker hub
+   # https://hub.docker.com/r/cherts/anylink/tags
+   docker pull cherts/anylink:latest
+   ```
+
+2. View command information
+
+   ```bash
+   docker run -it --rm cherts/anylink -h
+   ```
+
+3. Generate password
+
+   ```bash
+   docker run -it --rm cherts/anylink tool -p 123456
+   #Passwd:$2a$10$lCWTCcGmQdE/4Kb1wabbLelu4vY/cUwBwN64xIzvXcihFgRzUvH2a
+   ```
+
+4. Generate JWT secret
+
+   ```bash
+   docker run -it --rm cherts/anylink tool -s
+   #Secret:9qXoIhY01jqhWIeIluGliOS4O_rhcXGGGu422uRZ1JjZxIZmh17WwzW36woEbA
+   ```
+
+5. Start container
+
+   ```bash
+   docker run -itd --name anylink --privileged \
+       -p 443:443 -p 8800:8800 \
+       --restart=always \
+       cherts/anylink
+   ```
+
+6. Start container with custom parameters
+   ```bash
+   # Parameters can refer to the -h command
+   docker run -itd --name anylink --privileged \
+       -p 443:443 -p 8800:8800 \
+       --restart=always \
+       cherts/anylink \
+       -c=/etc/server.toml --ip_lease=1209600 # IP address lease length
+   ```
+
+7. Build the image (optional)
+
+   ```bash
+   # Get the warehouse source code
+   git clone https://github.com/cherts/anylink.git
+   # Build image
+   docker build -t anylink -f docker/Dockerfile .
+   ```
+
+## Common problem
+
+Please go to [question address](doc/question.md) for detailed information
+
+## Discussion
+
+Add Telegram: @cherts
+
+Group shared files have related software downloads
+
+<!--
+Add WeChat group: There are related software downloads for group shared files
+
+![contact_me_qr](doc/screenshot/contact_me_qr.png)
+-->
+
+## Contribution
+
+Welcome to submit PRs and Issues, and thank you for contributing to AnyLink.
+
+Note that when creating a new PR, you need to submit it to the dev branch, and other branches will not be merged yet.
+
+## Other Screenshot
+
+<details>
+<summary>Expand to view</summary>
+
+![system.jpg](doc/screenshot/system.jpg)
+![setting.jpg](doc/screenshot/setting.jpg)
+![other.jpg](doc/screenshot/other.jpg)
+![audit.jpg](doc/screenshot/audit.jpg)
+![users.jpg](doc/screenshot/users.jpg)
+![ip_map.jpg](doc/screenshot/ip_map.jpg)
+![group.jpg](doc/screenshot/group.jpg)
+
+</details>
+
+## License
+
+This project adopts the AGPL-3.0 open source license, and the complete authorization instructions have been placed in the LICENSE file.
+
+## Thank
+
+<a href="https://github.com/bjdgyc/">bjdgyc</a>

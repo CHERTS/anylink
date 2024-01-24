@@ -1,0 +1,15 @@
+[Unit]
+Description=AnyLink Server Service
+Documentation=https://github.com/cherts/anylink
+After=network-online.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/var/lib/anylink
+Restart=on-failure
+RestartSec=5s
+ExecStart=/usr/sbin/anylink --conf=/etc/anylink/server.toml
+
+[Install]
+WantedBy=multi-user.target

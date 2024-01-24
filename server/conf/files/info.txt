@@ -1,0 +1,2 @@
+The client software needs to be placed in the files directory.
+If you need help, please join the Telegram: @cherts

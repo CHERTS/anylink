@@ -1,0 +1,91 @@
+# Sample configuration information
+
+# Other configuration files, you can use absolute paths
+# or relative to the path to the anylink binary
+
+# Database
+db_type = "sqlite3"
+db_source = "/var/lib/anylink/anylink.db"
+# Certificate file
+cert_file = "/etc/anylink/vpn_cert.crt"
+cert_key = "/etc/anylinkvpn_cert.key"
+files_path = "/var/lib/anylink/files"
+profile = "/etc/anylink/profile.xml"
+# Log directory, if empty, write to standard output
+log_path = "/var/log"
+log_level = "debug"
+pprof = false
+
+# System name
+issuer = "XXX company VPN"
+# Admin users
+admin_user = "admin"
+# Admin password: 123456
+admin_pass = "$2a$10$UQ7C.EoPifDeJh6d8.31TeSPQU7hM/NOM2nixmBucJpAuXDQNqNke"
+# Leave it blank to disable OTP.
+# After OTP is enabled, the password is password+6-digit OTP.
+# Generate OTP: ./anylink tool -o
+admin_otp = ""
+# Generate JWT: ./anylink tool -s
+jwt_secret = "abcdef.0123456789.abcdef"
+
+
+# Service listening address
+server_addr = ":443"
+# Enable DTLS, disabled by default
+server_dtls = false
+server_dtls_addr = ":443"
+# Admin service listening address
+admin_addr = ":8800"
+# Enable tcp proxy protocol
+proxy_protocol = false
+
+link_mode = "tun"
+
+# IP address pool assigned by the client
+ipv4_master = "eth0"
+ipv4_cidr = "192.168.90.0/24"
+ipv4_gateway = "192.168.90.1"
+ipv4_start = "192.168.90.100"
+ipv4_end = "192.168.90.200"
+
+# Maximum number of clients
+max_client = 100
+# Number of simultaneous online users for a single user
+max_user_client = 3
+# IP lease period (seconds)
+ip_lease = 86400
+
+# Default selected group
+default_group = "one"
+
+# Client failure detection time (seconds) dpd > keepalive
+cstp_keepalive = 6
+cstp_dpd = 10
+mobile_keepalive = 15
+mobile_dpd = 20
+
+# Set maximum transmission unit
+mtu = 1460
+
+# Default domain to publish to
+default_domain = "example.com"
+#default_domain = "example.com abc.example.com"
+
+# Session expiration time, used for disconnection and reconnection, 0 will never expire
+session_timeout = 3600
+auth_timeout = 0
+audit_interval = -1
+
+show_sql = false
+
+# Whether to automatically add NAT
+iptables_nat = true
+
+# Enable compression
+compression = false
+# Below and equal to how many bytes are not compressed
+no_compress_limit = 256
+
+# Client displays detailed error information (be careful to enable online environment)
+display_error = false
