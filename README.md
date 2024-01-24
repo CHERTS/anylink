@@ -218,18 +218,30 @@ ipv4_end = "10.1.2.200"
 
 1. Add anylink program
 
-    - anylink program directory into `/usr/local/anylink-deploy`
-    - Add execution permissions `chmod +x /usr/local/anylink-deploy/anylink`
+    - Copy `anylink-deploy/anylink` binary to `/usr/sbin/anylink`
+    - Add execution permissions `chmod +x /usr/sbin/anylink`
 
-2. systemd/anylink.service unit file put:
+2. Added config file
 
-    - centos: `/usr/lib/systemd/system/`
-    - ubuntu: `/lib/systemd/system/`
+    - Create config directory `/etc/anylink`
+    - Copy file `anylink-deploy/conf/server-sample.toml` to `/etc/anylink/server.toml`
+    - Copy file `anylink-deploy/conf/profile.xml`, `anylink-deploy/conf/vpn_cert.crt`, `anylink-deploy/conf/vpn_cert.key` to `/etc/anylink`
 
-3. Operation command:
+3. Added working file
 
-    - start up: `systemctl start anylink`
-    - stop: `systemctl stop anylink`
+    - Create working directory `/var/lib/anylink` and `/var/lib/anylink/files`
+    - Copy file `anylink-deploy/conf/files/index.html`, `anylink-deploy/conf/files/info.txt` to `/var/lib/anylink/files`
+
+4. Copy systemd unit file `anylink-deploy/systemd/anylink.service` to:
+
+    - for CentOS: `/usr/lib/systemd/system/`
+    - for Ubuntu: `/lib/systemd/system/`
+    - and exec: `systemctl daemon-reload`
+
+5. Operation command:
+
+    - Start: `systemctl start anylink`
+    - Stop: `systemctl stop anylink`
     - Start automatically at boot: `systemctl enable anylink`
 
 ## Docker
