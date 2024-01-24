@@ -15,8 +15,6 @@ AnyLink is an enterprise-level remote office sslvpn software that can support mu
 
 > github: https://github.com/cherts/anylink
 
-> gitee: https://gitee.com/cherts/anylink
-
 ## Introduction
 
 AnyLink is based on [ietf-openconnect](https://tools.ietf.org/html/draft-mavrogiannopoulos-openconnect-02)
