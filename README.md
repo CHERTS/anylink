@@ -61,7 +61,6 @@ git clone https://github.com/cherts/anylink.git
 # node v16.20.2
 # yarn 1.22.19
 
-
 cd anylink
 sh build.sh
 
@@ -308,15 +307,7 @@ Please go to [question address](doc/question.md) for detailed information
 
 ## Discussion
 
-Add Telegram: @cherts
-
-Group shared files have related software downloads
-
-<!--
-Add WeChat group: There are related software downloads for group shared files
-
-![contact_me_qr](doc/screenshot/contact_me_qr.png)
--->
+Telegram: @cherts
 
 ## Contribution
 
