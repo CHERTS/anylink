@@ -13,7 +13,7 @@ AnyLink is an enterprise-level remote office sslvpn software that can support mu
 
 ## Repo
 
-> github: https://github.com/cherts/anylink
+> Github: https://github.com/cherts/anylink
 
 ## Introduction
 
