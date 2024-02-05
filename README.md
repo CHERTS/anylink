@@ -1,4 +1,4 @@
-# AnyLink
+# AnyLink (English version)
 
 [![Go](https://github.com/cherts/anylink/workflows/Go/badge.svg?branch=main)](https://github.com/cherts/anylink/actions)
 [![PkgGoDev](https://pkg.go.dev/badge/github.com/cherts/anylink)](https://pkg.go.dev/github.com/cherts/anylink)
@@ -22,8 +22,7 @@ Protocol development, and draws on the development ideas of [ocserv](http://ocse
 
 AnyLink uses TLS/DTLS for data encryption, so an RSA or ECC certificate is required. You can apply for a free SSL certificate through Let's Encrypt and TrustAsia.
 
-The AnyLink server is only tested on CentOS 7, CentOS 8, Ubuntu 18.04, and Ubuntu 20.04. If it needs to be installed on other systems, the server needs to support tun/tap.
-Function, ip setting command.
+The AnyLink server is only tested on CentOS 7, CentOS 8, Ubuntu 18.04, Ubuntu 20.04 and Ubuntu 22.04. If it needs to be installed on other systems, the server needs to support the tun/tap function and ip setting command.
 
 ## Screenshot
 
@@ -31,13 +30,13 @@ Function, ip setting command.
 
 ## Installation
 
-> Students without programming foundation are recommended to download the release package directly and download anylink-deploy.tar.gz from the address below.
+> People without programming foundation are recommended to download the release package directly and download anylink-deploy.tar.gz from the address below.
 >
 > https://github.com/cherts/anylink/releases
 
 ### Usage issues
 
-> For the test environment, you can use vpn.test.vqilu.cn to bind the host for testing
+> For the test environment, you can use vpn.xxx.com to bind the host for testing
 >
 > For online environments, you must apply for a secure https certificate, and private certificate connections are not supported.
 >
@@ -73,8 +72,6 @@ sudo ./anylink
 # https://host:8800
 # Default account password
 # admin 123456
-
-
 ```
 
 ## Feature
@@ -393,6 +390,6 @@ Note that when creating a new PR, you need to submit it to the dev branch, and o
 
 This project adopts the AGPL-3.0 open source license, and the complete authorization instructions have been placed in the LICENSE file.
 
-## Thank
+## Original project anylink (in Chinese)
 
-<a href="https://github.com/bjdgyc/">bjdgyc</a>
+<a href="https://github.com/bjdgyc/anylink">anylink</a>
