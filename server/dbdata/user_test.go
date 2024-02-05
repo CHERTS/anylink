@@ -85,6 +85,6 @@ func TestCheckUser(t *testing.T) {
 	ast.Nil(err)
 	err = CheckUser("aaa", "bbbbbbb", group3)
 	if ast.NotNil(err) {
-		ast.Equal("aaa LDAP server connection abnormality, please check the server and port", err.Error())
+		ast.Equal("aaa LDAP server connection exception, please check the server and port", err.Error())
 	}
 }
