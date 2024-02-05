@@ -4,8 +4,13 @@
 
 set -x
 
-sed -i 's/dl-cdn.alpinelinux.org/mirrors.tuna.tsinghua.edu.cn/g' /etc/apk/repositories
-export GOPROXY=https://goproxy.cn
+CN="no"
+
+#TODO Use mirroring when packaging locally
+if [[ $CN == "yes" ]]; then
+  sed -i 's/dl-cdn.alpinelinux.org/mirrors.tuna.tsinghua.edu.cn/g' /etc/apk/repositories
+  export GOPROXY=https://goproxy.cn
+fi
 
 apk add build-base tzdata gcc musl-dev upx
 
