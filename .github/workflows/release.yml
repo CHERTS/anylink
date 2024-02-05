@@ -12,7 +12,7 @@ jobs:
     name: build-binary
     runs-on: ubuntu-latest
     env:
-      TZ: Asia/Moscow
+      TZ: Europe/Moscow
     steps:
       - name: Syatem info
         run: uname -a

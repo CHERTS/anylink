@@ -13,7 +13,7 @@ ARG CN="no"
 ARG appVer="appVer"
 ARG commitId="commitId"
 
-ENV TZ=Asia/Shanghai
+ENV TZ=Europe/Moscow
 
 WORKDIR /server
 COPY docker/init_build.sh /tmp/
@@ -29,7 +29,7 @@ LABEL maintainer="github.com/cherts"
 
 ARG CN="no"
 
-ENV TZ=Asia/Shanghai
+ENV TZ=Europe/Moscow
 ENV ANYLINK_IN_CONTAINER=true
 
 WORKDIR /app
