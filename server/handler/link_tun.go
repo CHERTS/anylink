@@ -74,11 +74,7 @@ func LinkTun(cSess *sessdata.ConnSession) error {
 
 	// View alias information through ip link show
 
-	cmdstr1 := fmt.Sprintf("ip link set dev %s up mtu %d multicast off", ifce.Name(), cSess.Mtu)
-	if !base.InContainer {
-		// The default iproute of the container does not support alias
-		cmdstr1 += fmt.Sprintf(" alias %s.%s", cSess.Group.Name, cSess.Username)
-	}
+	cmdstr1 := fmt.Sprintf("ip link set dev %s up mtu %d multicast off alias %s.%s", ifce.Name(), cSess.Mtu, cSess.Group.Name, cSess.Username)
 	cmdstr2 := fmt.Sprintf("ip addr add dev %s local %s peer %s/32",
 		ifce.Name(), base.Cfg.Ipv4Gateway, cSess.IpAddr)
 	err = execCmd([]string{cmdstr1, cmdstr2})

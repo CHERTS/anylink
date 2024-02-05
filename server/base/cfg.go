@@ -45,6 +45,7 @@ type ServerConfig struct {
 	FilesPath      string `json:"files_path"`
 	LogPath        string `json:"log_path"`
 	LogLevel       string `json:"log_level"`
+	HttpServerLog  bool   `json:"http_server_log"`
 	Pprof          bool   `json:"pprof"`
 	Issuer         string `json:"issuer"`
 	AdminUser      string `json:"admin_user"`
@@ -70,6 +71,7 @@ type ServerConfig struct {
 	Mtu             int    `json:"mtu"`
 	DefaultDomain   string `json:"default_domain"`
 
+	IdleTimeout    int `json:"idle_timeout"`    // in seconds
 	SessionTimeout int `json:"session_timeout"` // in seconds
 	// AuthTimeout    int `json:"auth_timeout"`    // in seconds
 	AuditInterval int `json:"audit_interval"` // in seconds
@@ -153,6 +155,7 @@ type SCfg struct {
 	Env  string      `json:"env"`
 	Info string      `json:"info"`
 	Data interface{} `json:"data"`
+	Val  interface{} `json:"default"`
 }
 
 func ServerCfg2Slice() []SCfg {
@@ -167,18 +170,27 @@ func ServerCfg2Slice() []SCfg {
 		field := typ.Field(i)
 		value := s.Field(i)
 		tag := field.Tag.Get("json")
-		usage, env := getUsageEnv(tag)
+		usage, env, val := getUsageEnv(tag)
 
-		datas = append(datas, SCfg{Name: tag, Env: env, Info: usage, Data: value.Interface()})
+		datas = append(datas, SCfg{Name: tag, Env: env, Info: usage, Data: value.Interface(), Val: val})
 	}
 
 	return datas
 }
 
-func getUsageEnv(name string) (usage, env string) {
+func getUsageEnv(name string) (usage, env string, val interface{}) {
 	for _, v := range configs {
 		if v.Name == name {
 			usage = v.Usage
+			if v.Typ == cfgStr {
+				val = v.ValStr
+			}
+			if v.Typ == cfgInt {
+				val = v.ValInt
+			}
+			if v.Typ == cfgBool {
+				val = v.ValBool
+			}
 		}
 	}
 

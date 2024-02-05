@@ -1,7 +1,6 @@
 package base
 
 import (
-	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -17,8 +16,6 @@ import (
 )
 
 var (
-	// Submit id
-	CommitId string
 	// pass plain text
 	passwd string
 	// generate otp
@@ -61,7 +58,27 @@ func execute() {
 	}
 
 	if !runSrv {
+		if debug {
+			scfgData := ServerCfg2Slice()
+			fmtStr := "%-18v %-23v %-20v %v\n"
+			fmt.Printf(fmtStr, "Name", "Env", "Value", "Info")
+			for _, v := range scfgData {
+				if v.Name == "admin_pass" || v.Name == "jwt_secret" {
+					v.Val = "******"
+				}
+				fmt.Printf(fmtStr, v.Name, v.Env, v.Val, v.Info)
+			}
+		}
 		os.Exit(0)
+	}
+
+	// Mobile configuration parsing code
+	conf := linkViper.GetString("conf")
+	linkViper.SetConfigFile(conf)
+	err = linkViper.ReadInConfig()
+	if err != nil {
+		// There is no configuration file and an error is reported directly.
+		panic("config file err:" + err.Error())
 	}
 }
 
@@ -106,19 +123,6 @@ func initCmd() {
 
 	cobra.OnInitialize(func() {
 		linkViper.AutomaticEnv()
-		conf := linkViper.GetString("conf")
-
-		_, err := os.Stat(conf)
-		if errors.Is(err, os.ErrNotExist) {
-			// No configuration file, no processing
-			panic(err)
-		}
-
-		linkViper.SetConfigFile(conf)
-		err = linkViper.ReadInConfig()
-		if err != nil {
-			panic("Config file err:" + err.Error())
-		}
 	})
 }
 
@@ -136,6 +140,8 @@ func initToolCmd() *cobra.Command {
 	toolCmd.Flags().BoolVarP(&debug, "debug", "d", false, "list the config viper.Debug() info")
 
 	toolCmd.Run = func(cmd *cobra.Command, args []string) {
+		runSrv = false
+
 		switch {
 		case rev:
 			printVersion()
@@ -154,7 +160,7 @@ func initToolCmd() *cobra.Command {
 			pass, _ := utils.PasswordHash(passwd)
 			fmt.Printf("Passwd:%s\n", pass)
 		case debug:
-			linkViper.Debug()
+			// linkViper.Debug()
 		default:
 			fmt.Println("Using [anylink tool -h] for help")
 		}
@@ -164,6 +170,6 @@ func initToolCmd() *cobra.Command {
 }
 
 func printVersion() {
-	fmt.Printf("%s v%s build on %s [%s, %s] commit_id(%s) \n",
-		APP_NAME, APP_VER, runtime.Version(), runtime.GOOS, runtime.GOARCH, CommitId)
+	fmt.Printf("%s v%s build on %s [%s, %s] date:%s commit_id(%s)\n",
+		APP_NAME, APP_VER, runtime.Version(), runtime.GOOS, runtime.GOARCH, BuildDate, CommitId)
 }

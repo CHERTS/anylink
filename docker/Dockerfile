@@ -3,52 +3,48 @@
 #debian:bullseye-slim
 #sed -i 's/deb.debian.org/mirrors.ustc.edu.cn/g' /etc/apt/sources.list
 
-# web
-FROM node:16-alpine3.18 as builder_node
-WORKDIR /web
-COPY ./web /web
-RUN yarn install \
-    && yarn run build \
-    && ls /web/ui
+# Use with github action
+# You need to compile the ui file first and then execute docker compilation
 
 # server
-FROM golang:1.20-alpine3.18 as builder_golang
-#TODO Use mirroring when packaging locally
-ENV GOPROXY=https://goproxy.cn
-ENV GOOS=linux
-ARG GitCommitId="gitCommitId"
+FROM golang:1.20-alpine3.19 as builder_golang
 
-WORKDIR /anylink
-COPY server /anylink
-COPY --from=builder_node /web/ui  /anylink/ui
+ARG CN="no"
+ARG appVer="appVer"
+ARG commitId="commitId"
 
-#TODO Use mirroring when packaging locally
-RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.tuna.tsinghua.edu.cn/g' /etc/apk/repositories
-RUN apk add gcc musl-dev
-RUN cd /anylink;go mod tidy;go build -o anylink -ldflags "-s -w -X main.CommitId=${GitCommitId}" \
-    && /anylink/anylink tool -v
+ENV TZ=Asia/Shanghai
+
+WORKDIR /server
+COPY docker/init_build.sh /tmp/
+COPY server/ /server/
+COPY web/ui  /server/ui
+
+#RUN apk add gcc musl-dev bash
+RUN sh /tmp/init_build.sh
 
 # anylink
-FROM alpine:3.18
+FROM alpine:3.19
 LABEL maintainer="github.com/cherts"
 
+ARG CN="no"
+
+ENV TZ=Asia/Shanghai
 ENV ANYLINK_IN_CONTAINER=true
 
 WORKDIR /app
-COPY --from=builder_golang /anylink/anylink  /app/
-COPY docker/docker_entrypoint.sh  /app/
-COPY ./server/bridge-init.sh /app/
+COPY docker/init_release.sh /tmp/
+
+COPY --from=builder_golang /server/anylink  /app/
+COPY docker/docker_entrypoint.sh server/bridge-init.sh ./README.md ./LICENSE version_info /app/
+COPY ./deploy /app/deploy
+COPY ./index_template  /app/index_template
 COPY ./server/conf  /app/conf
-COPY ./LICENSE  /app/LICENSE
-COPY ./home  /app/home
 
 #TODO Use mirroring when packaging locally
-RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.tuna.tsinghua.edu.cn/g' /etc/apk/repositories
-RUN apk add --no-cache bash iptables \
-    && chmod +x /app/docker_entrypoint.sh \
-    && ls /app
+RUN sh /tmp/init_release.sh
 
-EXPOSE 443 8800
+EXPOSE 443 8800 443/udp
 
 #CMD ["/app/anylink"]
 ENTRYPOINT ["/app/docker_entrypoint.sh"]

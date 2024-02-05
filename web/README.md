@@ -4,8 +4,6 @@
 
 > github: https://github.com/cherts/anylink-web
 
-> gitee: https://gitee.com/cherts/anylink-web
-
 ## Project setup
 ```
 npm install

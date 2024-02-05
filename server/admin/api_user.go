@@ -22,6 +22,7 @@ import (
 func UserList(w http.ResponseWriter, r *http.Request) {
 	_ = r.ParseForm()
 	prefix := r.FormValue("prefix")
+	prefix = strings.TrimSpace(prefix)
 	pageS := r.FormValue("page")
 	page, _ := strconv.Atoi(pageS)
 	if page < 1 {
@@ -37,8 +38,11 @@ func UserList(w http.ResponseWriter, r *http.Request) {
 
 	// Query prefix matching
 	if len(prefix) > 0 {
-		count = dbdata.CountPrefix("username", prefix, &dbdata.User{})
-		err = dbdata.Prefix("username", prefix, &datas, pageSize, 1)
+		fuzzy := "%" + prefix + "%"
+		where := "username LIKE ? OR nickname LIKE ? OR email LIKE ?"
+
+		count = dbdata.FindWhereCount(&dbdata.User{}, where, fuzzy, fuzzy, fuzzy)
+		err = dbdata.FindWhere(&datas, pageSize, page, where, fuzzy, fuzzy, fuzzy)
 	} else {
 		count = dbdata.CountAll(&dbdata.User{})
 		err = dbdata.Find(&datas, pageSize, page)

@@ -107,11 +107,17 @@ sudo ./anylink
 > There are detailed comments in the sample configuration file. Just fill in the configuration according to the comments.
 
 ```shell
+# View help information
+./anylink -h
+
 # Generate admin password
 ./anylink tool -p 123456
 
 # Generate JWT key
 ./anylink tool -s
+
+# View all configuration items
+./anylink tool -d
 ```
 
 > Database configuration example
@@ -125,6 +131,15 @@ sudo ./anylink
 > Sample configuration file
 >
 > [conf/server-sample.toml](server/conf/server-sample.toml)
+
+## Upgrade
+
+> Please back up the configuration file `conf` directory and database before upgrading, and stop the service
+>
+> Replace the old version with the new version of the `anylink` binary
+>
+> After restarting the service, the upgrade can be completed
+
 
 ## Setting
 
@@ -204,6 +219,14 @@ iptables_nat = false
 # The master network card needs to turn on promiscuous mode
 ip link set dev eth0 promisc on
 
+#=====================#
+
+# Configuration file modification
+# First turn off the nat forwarding function
+iptables_nat = false
+
+link_mode = "macvtap"
+
 # Internal network main network card name
 ipv4_master = "eth0"
 # The following network segments need to be set the same as the ipv4_master network card
@@ -212,6 +235,10 @@ ipv4_gateway = "10.1.2.1"
 ipv4_start = "10.1.2.100"
 ipv4_end = "10.1.2.200"
 ```
+
+## Deploy
+
+> The deployment configuration file is placed in the `deploy` directory. Please modify the configuration file according to the actual situation.
 
 ## Systemd
 
@@ -277,16 +304,21 @@ ipv4_end = "10.1.2.200"
 
    ```bash
    docker run -itd --name anylink --privileged \
-       -p 443:443 -p 8800:8800 \
+       -p 443:443 -p 8800:8800 -p 443:443/udp \
+       -v /home/myconf:/app/conf \
        --restart=always \
        cherts/anylink
+
+   docker restart anylink
    ```
 
 6. Start container with custom parameters
    ```bash
    # Parameters can refer to the -h command
    docker run -itd --name anylink --privileged \
-       -p 443:443 -p 8800:8800 \
+       -e LINK_LOG_LEVEL=info \
+       -p 443:443 -p 8800:8800 -p 443:443/udp \
+       -v /home/myconf:/app/conf \
        --restart=always \
        cherts/anylink \
        -c=/etc/server.toml --ip_lease=1209600 # IP address lease length
@@ -298,6 +330,8 @@ ipv4_end = "10.1.2.200"
    # Get the warehouse source code
    git clone https://github.com/cherts/anylink.git
    # Build image
+   sh build_docker.sh
+   or
    docker build -t anylink -f docker/Dockerfile .
    ```
 

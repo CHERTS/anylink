@@ -28,9 +28,15 @@ jwt_secret = "abcdef.0123456789.abcdef"
 
 # Service listening address
 server_addr = ":443"
+# Enable DTLS
+server_dtls = true
+# UDP listening address (any port)
+server_dtls_addr = ":443"
 # Admin service listening address
 admin_addr = ":8800"
 
+# Virtual network type [tun macvtap]
+link_mode = "tun"
 # IP address pool assigned by the client
 ipv4_master = "eth0"
 ipv4_cidr = "192.168.90.0/24"

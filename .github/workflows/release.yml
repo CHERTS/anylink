@@ -1,0 +1,98 @@
+name: release
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - "v0.*"
+      - "v1.*"
+
+jobs:
+  Build:
+    name: build-binary
+    runs-on: ubuntu-latest
+    env:
+      TZ: Asia/Moscow
+    steps:
+      - name: Syatem info
+        run: uname -a
+
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '16'
+          cache: 'yarn'
+          cache-dependency-path: 'web/yarn.lock'
+      - name: Build web
+        working-directory: web
+        run: |
+          yarn install
+          yarn run build
+      #      - uses: actions/setup-go@v4
+      #        with:
+      #          go-version: '1.20'
+      #          cache-dependency-path: 'server/go.sum'
+
+      - name: Set up QEMU
+        # https://github.com/docker/setup-qemu-action
+        uses: docker/setup-qemu-action@v3
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: cherts
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+          logout: true
+
+      - name: Pre bash
+        shell: bash
+        run: |
+          appVer=`cat version`
+          commitId=`git rev-parse HEAD`
+          echo "APP_VER=$appVer" >> $GITHUB_ENV
+          echo "commitId=$commitId" >> $GITHUB_ENV
+          
+          echo $appVer > version_info
+          echo $commitId >> version_info
+          echo $GITHUB_REF >> version_info
+          echo $GITHUB_REF_NAME >> version_info
+          
+          #cd server;go mod tidy
+
+      - name: Build and push
+        uses: docker/build-push-action@v5
+        with:
+          push: true
+          cache-from: type=gha,scope=anylink
+          cache-to: type=gha,mode=max,scope=anylink
+          context: .
+          file: ./docker/Dockerfile
+          platforms: linux/amd64,linux/arm64
+          #platforms: linux/amd64
+          build-args: |
+            appVer=${{ env.APP_VER }}
+            commitId=${{ env.commitId }}
+          tags: cherts/anylink:latest,cherts/anylink:${{ env.APP_VER }}
+          #tags: cherts/anylink:${{ env.APP_VER }}
+
+      - name: Build deploy binary
+        shell: bash
+        run: bash release.sh
+
+      - name: Release
+        # https://github.com/ncipollo/release-action
+        # artifacts: bin/release/*
+        # generateReleaseNotes: true
+        # draft: true
+        # https://github.com/softprops/action-gh-release
+        uses: softprops/action-gh-release@v1
+        #if: startsWith(github.ref, 'refs/tags/')
+        with:
+          tag_name: v${{ env.APP_VER }}
+          files: artifact-dist/*
+
+#  Docker:
+#    name: build-docker

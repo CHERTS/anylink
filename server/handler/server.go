@@ -51,7 +51,7 @@ func startTls() {
 		MinVersion:   tls.VersionTLS12,
 		CipherSuites: selectedCipherSuites,
 		GetCertificate: func(chi *tls.ClientHelloInfo) (*tls.Certificate, error) {
-			base.Trace("GetCertificate", chi.ServerName)
+			base.Trace("GetCertificate ServerName", chi.ServerName)
 			return dbdata.GetCertificateBySNI(chi.ServerName)
 		},
 	}
@@ -59,14 +59,14 @@ func startTls() {
 		Addr:         addr,
 		Handler:      initRoute(),
 		TLSConfig:    tlsConfig,
-		ErrorLog:     base.GetBaseLog(),
-		ReadTimeout:  60 * time.Second,
-		WriteTimeout: 60 * time.Second,
+		ErrorLog:     base.GetServerLog(),
+		ReadTimeout:  100 * time.Second,
+		WriteTimeout: 100 * time.Second,
 	}
 
 	ln, err = net.Listen("tcp", addr)
 	if err != nil {
-		log.Fatal(err)
+		base.Fatal(err)
 	}
 	defer ln.Close()
 

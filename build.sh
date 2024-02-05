@@ -9,53 +9,50 @@ function RETVAL() {
   fi
 }
 
-#Current directory
 cpath=$(pwd)
-
-ver=`cat server/base/app_ver.go | grep APP_VER | awk '{print $3}' | sed 's/"//g'`
-echo "Version: $ver"
+ver=$(cat version)
+echo "Current version $ver"
 
 echo "Compile frontend project..."
 cd $cpath/web
-#Domestic alternative sources speed up
-#npx browserslist@latest --update-db
-#npm install --registry=https://registry.npm.taobao.org
-#npm install
-#npm run build
 
+#npx browserslist@latest --update-db
 yarn install --registry=https://registry.npmmirror.com
 yarn run build
-
-
 RETVAL $?
 
 echo "Compile binaries..."
 cd $cpath/server
 rm -rf ui
 cp -rf $cpath/web/ui .
-#Domestic alternative sources speed up
-#export GOPROXY=https://goproxy.io
+
+# -tags osusergo,netgo,sqlite_omit_load_extension
+flags="-v -trimpath"
+
+# -extldflags '-static'
+ldflags="-s -w -X main.appVer=$ver -X main.commitId=$(git rev-parse HEAD) -X main.date=$(date -Iseconds)"
+
+export GOPROXY=https://goproxy.io
 go mod tidy
-go build -v -o anylink -ldflags "-s -w -X main.CommitId=$(git rev-parse HEAD)"
-RETVAL $?
+go build -o anylink $flags -ldflags "$ldflags"
 
 cd $cpath
 
-echo "Organize deployment files..."
+exit 0
+
+echo "Build deployment files..."
 deploy="anylink-deploy"
 rm -rf $deploy ${deploy}.tar.gz
 mkdir $deploy
-
+mkdir $deploy/log
 cp -r server/anylink $deploy
-#cp -r server/bridge-init.sh $deploy
+cp -r server/bridge-init.sh $deploy
 cp -r server/conf $deploy
-
 cp -r systemd $deploy
 cp -r LICENSE $deploy
 cp -r home $deploy
-
 tar zcvf ${deploy}.tar.gz $deploy
 
-#Make sure to run with root privileges
+# Make sure to run with root privileges
 #cd anylink-deploy
 #sudo ./anylink --conf="conf/server.toml"

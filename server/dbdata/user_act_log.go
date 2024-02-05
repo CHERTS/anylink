@@ -22,6 +22,7 @@ const (
 	UserLogoutTimeout = 3 // User logs out after timeout
 	UserLogoutAdmin   = 4 // The account was kicked offline by the administrator
 	UserLogoutExpire  = 5 // The account expired and was kicked offline.
+	UserIdleTimeout   = 6 // User idle link timeout
 )
 
 type UserActLogProcess struct {
@@ -62,6 +63,7 @@ var (
 			UserLogoutTimeout: "Session expired and was kicked offline",
 			UserLogoutAdmin:   "The account was kicked offline by the administrator",
 			UserLogoutExpire:  "The account expired and was kicked offline.",
+			UserIdleTimeout:   "User idle link timeout",
 		},
 	}
 )
