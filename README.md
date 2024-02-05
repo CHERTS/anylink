@@ -270,6 +270,16 @@ ipv4_end = "10.1.2.200"
     - Stop: `systemctl stop anylink`
     - Start automatically at boot: `systemctl enable anylink`
 
+### Docker Compose
+
+1. Enter the `deploy` directory
+2. Execute `docker-compose up`
+
+### k8s
+
+1. Enter the `deploy` directory
+2. Execute `kubectl apply -f deployment.yaml`
+
 ## Docker
 
 1. Get image
@@ -300,31 +310,46 @@ ipv4_end = "10.1.2.200"
    #Secret:9qXoIhY01jqhWIeIluGliOS4O_rhcXGGGu422uRZ1JjZxIZmh17WwzW36woEbA
    ```
 
-5. Start container
+5. View all configuration items
+   ```bash
+   docker run -it --rm cherts/anylink tool -d
+   ```
+
+6. Start container
 
    ```bash
+   # Start by default
+   docker run -itd --name anylink --privileged \
+       -p 443:443 -p 8800:8800 -p 443:443/udp \
+       --restart=always \
+       cherts/anylink
+
+   # Custom configuration directory
+   # A configuration file will be automatically created on first startup
+   # After the configuration file is initialized, the container will be forced to exit. Please restart the container.
    docker run -itd --name anylink --privileged \
        -p 443:443 -p 8800:8800 -p 443:443/udp \
        -v /home/myconf:/app/conf \
        --restart=always \
        cherts/anylink
-
+   
    docker restart anylink
    ```
 
-6. Start container with custom parameters
+7. Start container with custom parameters
    ```bash
-   # Parameters can refer to the -h command
+   # Parameters can refer to ./anylink tool -d
+   # You can use command line parameters or environment variables to configure
    docker run -itd --name anylink --privileged \
        -e LINK_LOG_LEVEL=info \
        -p 443:443 -p 8800:8800 -p 443:443/udp \
        -v /home/myconf:/app/conf \
        --restart=always \
-       cherts/anylink \
-       -c=/etc/server.toml --ip_lease=1209600 # IP address lease length
+       bjdgyc/anylink \
+       --ip_lease=1209600 # IP地址租约时长
    ```
 
-7. Build the image (optional)
+8. Build the image (optional)
 
    ```bash
    # Get the warehouse source code
