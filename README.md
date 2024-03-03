@@ -342,8 +342,8 @@ ipv4_end = "10.1.2.200"
        -p 443:443 -p 8800:8800 -p 443:443/udp \
        -v /home/myconf:/app/conf \
        --restart=always \
-       bjdgyc/anylink \
-       --ip_lease=1209600 # IP地址租约时长
+       cherts/anylink \
+       --ip_lease=1209600
    ```
 
 8. Build the image (optional)

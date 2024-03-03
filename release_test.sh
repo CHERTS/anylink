@@ -13,20 +13,33 @@ function RETVAL() {
 
 cpath=$(pwd)
 
+ver=$(cat version)
+echo "Current version: $ver"
+
 echo "Copy binary file"
 cd $cpath/server
 # -tags osusergo,netgo,sqlite_omit_load_extension
 flags="-trimpath"
-ldflags="-s -w -extldflags '-static' -X main.appVer=$ver -X main.commitId=$(git rev-parse HEAD) -X main.date=$(date --iso-8601=seconds)"
+ldflags="-s -w -extldflags '-static' -X main.appVer=$ver -X main.commitId=$(git rev-parse HEAD) -X main.buildDate=$(date --iso-8601=seconds)"
 #github action
-gopath=$(go env GOPATH)
+gopath=/go
+
+dockercmd=$(
+  cat <<EOF
+apk add gcc g++ musl musl-dev tzdata
 go mod tidy
-# alpine3
-apk add gcc musl-dev
+export CGO_ENABLED=1
+go build -v -o anylink_amd64 $flags -ldflags "$ldflags"
+./anylink_amd64 -v
+EOF
+)
+
 # Compile using musl-dev
 docker run -q --rm -v $PWD:/app -v $gopath:/go -w /app --platform=linux/amd64 \
-  golang:1.20-alpine3.19 go build -o anylink_amd64 $flags -ldflags "$ldflags"
-./anylink_amd64 -v
+  golang:1.20-alpine3.19 sh -c "$dockercmd"
+
+exit 0
+
 # Compile arm64
 docker run -q --rm -v $PWD:/app -v $gopath:/go -w /app --platform=linux/arm64 \
   golang:1.20-alpine3.19 go build -o anylink_arm64 $flags -ldflags "$ldflags"

@@ -72,7 +72,7 @@ jobs:
           build-args: |
             appVer=${{ env.APP_VER }}
             commitId=${{ env.commitId }}
-          tags: cherts/anylink:latest,cherts/anylink:${{ env.APP_VER }}
+          tags: cherts/anylink:${{ env.APP_VER }},cherts/anylink:latest
 
       - name: Build deploy binary
         shell: bash

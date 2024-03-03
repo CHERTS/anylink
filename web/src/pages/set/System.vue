@@ -50,6 +50,7 @@
       </div>
       <Cell left="Version" :right="system.sys.appVersion" divider/>
       <Cell left="CommitId" :right="system.sys.appCommitId" divider/>
+      <Cell left="BuildDate" :right="system.sys.appBuildDate" divider/>
       <Cell left="Go system" :right="system.sys.goOs" divider/>
       <Cell left="Go arch" :right="system.sys.goArch" divider/>
       <Cell left="Go version" :right="system.sys.goVersion" divider/>

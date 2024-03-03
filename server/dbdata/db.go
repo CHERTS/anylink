@@ -179,7 +179,7 @@ const accountMail = `<p>Hello, {{.Issuer}}:</p>
     <ul>
         <li>Please use OTP software to scan the dynamic code QR code</li>
         <li>Then use anyconnect client to log in</li>
-        <li>The login password is [PIN code + dynamic code]</li>
+        <li>The login password is [PIN code + dynamic code] (there is no + sign in the middle)</li>
     </ul>
 </div>
 <p>

@@ -215,7 +215,8 @@
         
         <el-form-item label="Disable OTP" prop="disable_otp">
           <el-switch
-              v-model="ruleForm.disable_otp">
+              v-model="ruleForm.disable_otp"
+              active-text="After turning on OTP, the user password is [PIN code + OTP dynamic code] (there is no + sign in the middle)">
           </el-switch>
         </el-form-item>
 
