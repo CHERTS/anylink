@@ -1,13 +1,13 @@
-#node:16-bullseye
-#golang:1.20-bullseye
-#debian:bullseye-slim
+#node:16-bookworm
+#golang:1.22-bookworm
+#debian:bookworm-slim
 #sed -i 's/deb.debian.org/mirrors.ustc.edu.cn/g' /etc/apt/sources.list
 
 # Use with github action
 # You need to compile the ui file first and then execute docker compilation
 
 # server
-FROM golang:1.20-alpine3.19 as builder_golang
+FROM golang:1.22-alpine3.19 as builder_golang
 
 ARG CN="no"
 ARG appVer="appVer"
