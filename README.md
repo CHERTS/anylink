@@ -343,7 +343,7 @@ ipv4_end = "10.1.2.200"
        -v /home/myconf:/app/conf \
        --restart=always \
        cherts/anylink \
-       --ip_lease=1209600
+       --ip_lease=1209600 # IP address lease length
    ```
 
 8. Build the image (optional)
