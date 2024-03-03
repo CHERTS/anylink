@@ -31,7 +31,7 @@ jobs:
           yarn run build
       #      - uses: actions/setup-go@v4
       #        with:
-      #          go-version: '1.20'
+      #          go-version: '1.22'
       #          cache-dependency-path: 'server/go.sum'
 
       - name: Set up QEMU
@@ -72,7 +72,7 @@ jobs:
           build-args: |
             appVer=${{ env.APP_VER }}
             commitId=${{ env.commitId }}
-          tags: cherts/anylink:latest,cherts/anylink:${{ env.APP_VER }}
+          tags: cherts/anylink:${{ env.APP_VER }},cherts/anylink:latest
 
       - name: Build deploy binary
         shell: bash

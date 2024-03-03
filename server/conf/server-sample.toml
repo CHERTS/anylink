@@ -7,14 +7,14 @@
 db_type = "sqlite3"
 db_source = "/var/lib/anylink/anylink.db"
 # Certificate file
-cert_file = "/etc/anylink/vpn_cert.crt"
+cert_file = "/etc/anylink/vpn_cert.pem"
 cert_key = "/etc/anylink/vpn_cert.key"
 files_path = "/var/lib/anylink/files"
 profile = "/etc/anylink/profile.xml"
 # Log directory, if empty, write to standard output
 log_path = "/var/log"
 log_level = "debug"
-pprof = false
+pprof = true
 
 # System name
 issuer = "XXX company VPN"
@@ -69,12 +69,12 @@ mobile_dpd = 22
 # Set maximum transmission unit
 mtu = 1460
 
-# Default domain to publish to
+# Default search domain for client dns
 default_domain = "example.com"
 #default_domain = "example.com abc.example.com"
 
 # Idle link timeout (seconds) - disconnect the link after timeout, 0 turns off this function
-idle_timeout = 7200
+idle_timeout = 1800
 # Session expiration time, used for disconnection and reconnection, 0 will never expire
 session_timeout = 3600
 auth_timeout = 0

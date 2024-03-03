@@ -4,6 +4,7 @@ anylink-deploy
 anylink-deploy.tar.gz
 anylink
 anylink.db
-
 dist
 artifact-dist
+anylink_amd64
+anylink_arm64

@@ -1,15 +1,16 @@
 #!/bin/bash
 
 ver=$(cat version)
-echo $ver
+echo "Current version: $ver"
 
-# docker login -u cherts
+#docker login -u cherts
 
-docker run -it --rm -v $PWD/web:/app -w /app node:16-alpine \
-  sh -c "yarn install --registry=https://registry.npmmirror.com && yarn run build"
-
-docker buildx build -t cherts/anylink:latest --progress=plain --build-arg CN="yes" --build-arg appVer=$ver \
+echo "Docker build..."
+docker build -t cherts/anylink:latest --progress=plain --build-arg appVer=$ver \
   --build-arg commitId=$(git rev-parse HEAD) -f docker/Dockerfile .
 
-echo "docker tag latest $ver"
+echo "Docker tag latest $ver"
 docker tag cherts/anylink:latest cherts/anylink:$ver
+
+#echo "Docker push..."
+#docker push cherts/anylink

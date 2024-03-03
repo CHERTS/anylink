@@ -43,13 +43,13 @@ func LinkTunnel(w http.ResponseWriter, r *http.Request) {
 	// Determine the value of session-token
 	cookie, err := r.Cookie("webvpn")
 	if err != nil || cookie.Value == "" {
-		w.WriteHeader(http.StatusBadRequest)
+		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
 
 	sess := sessdata.SToken2Sess(cookie.Value)
 	if sess == nil {
-		w.WriteHeader(http.StatusBadRequest)
+		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
 
@@ -57,7 +57,7 @@ func LinkTunnel(w http.ResponseWriter, r *http.Request) {
 	cSess := sess.NewConn()
 	if cSess == nil {
 		log.Println(err)
-		w.WriteHeader(http.StatusBadRequest)
+		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
 
@@ -66,6 +66,8 @@ func LinkTunnel(w http.ResponseWriter, r *http.Request) {
 	cstpBaseMtu := r.Header.Get("X-CSTP-Base-MTU")
 	masterSecret := r.Header.Get("X-DTLS-Master-Secret")
 	localIp := r.Header.Get("X-Cstp-Local-Address-Ip4")
+	// export ip
+	exportIp4 := r.Header.Get("X-Cstp-Remote-Address-Ip4")
 	mobile := r.Header.Get("X-Cstp-License")
 
 	cSess.SetMtu(cstpMtu)
@@ -96,14 +98,6 @@ func LinkTunnel(w http.ResponseWriter, r *http.Request) {
 	dtlsCiphersuite := checkDtls12Ciphersuite(r.Header.Get("X-Dtls12-Ciphersuite"))
 	base.Trace("dtlsCiphersuite", dtlsCiphersuite)
 
-	// compression
-	if cmpName, ok := cSess.SetPickCmp("cstp", r.Header.Get("X-Cstp-Accept-Encoding")); ok {
-		HttpSetHeader(w, "X-CSTP-Content-Encoding", cmpName)
-	}
-	if cmpName, ok := cSess.SetPickCmp("dtls", r.Header.Get("X-Dtls-Accept-Encoding")); ok {
-		HttpSetHeader(w, "X-DTLS-Content-Encoding", cmpName)
-	}
-
 	// Return client data
 	HttpSetHeader(w, "Server", fmt.Sprintf("%s %s", base.APP_NAME, base.APP_VER))
 	HttpSetHeader(w, "X-CSTP-Version", "1")
@@ -113,9 +107,17 @@ func LinkTunnel(w http.ResponseWriter, r *http.Request) {
 	HttpSetHeader(w, "X-CSTP-Netmask", sessdata.IpPool.Ipv4Mask.String()) // subnet mask
 	HttpSetHeader(w, "X-CSTP-Hostname", hn)                               // machine name
 	HttpSetHeader(w, "X-CSTP-Base-MTU", cstpBaseMtu)
-	// Default domain to publish to
+	// Default search domain for client dns
 	if base.Cfg.DefaultDomain != "" {
 		HttpSetHeader(w, "X-CSTP-Default-Domain", base.Cfg.DefaultDomain)
+	}
+
+	// Compression
+	if cmpName, ok := cSess.SetPickCmp("cstp", r.Header.Get("X-Cstp-Accept-Encoding")); ok {
+		HttpSetHeader(w, "X-CSTP-Content-Encoding", cmpName)
+	}
+	if cmpName, ok := cSess.SetPickCmp("dtls", r.Header.Get("X-Dtls-Accept-Encoding")); ok {
+		HttpSetHeader(w, "X-DTLS-Content-Encoding", cmpName)
 	}
 
 	// Set user policy
@@ -125,11 +127,11 @@ func LinkTunnel(w http.ResponseWriter, r *http.Request) {
 	if cSess.Group.AllowLan {
 		HttpSetHeader(w, "X-CSTP-Split-Exclude", "0.0.0.0/255.255.255.255")
 	}
-	// dns address
+	// Dns address
 	for _, v := range cSess.Group.ClientDns {
 		HttpAddHeader(w, "X-CSTP-DNS", v.Val)
 	}
-	// allowed routes
+	// Allowed routes
 	for _, v := range cSess.Group.RouteInclude {
 		if v.Val == dbdata.All {
 			continue
@@ -139,6 +141,10 @@ func LinkTunnel(w http.ResponseWriter, r *http.Request) {
 	// Route not allowed
 	for _, v := range cSess.Group.RouteExclude {
 		HttpAddHeader(w, "X-CSTP-Split-Exclude", v.IpMask)
+	}
+	// Exclude export ip routing (export ip is not encrypted for transmission)
+	if base.Cfg.ExcludeExportIp && exportIp4 != "" {
+		HttpAddHeader(w, "X-CSTP-Split-Exclude", exportIp4+"/255.255.255.255")
 	}
 
 	HttpSetHeader(w, "X-CSTP-Lease-Duration", "1209600") // IP address lease period
@@ -186,7 +192,7 @@ func LinkTunnel(w http.ResponseWriter, r *http.Request) {
 	hClone := w.Header().Clone()
 	buf := &bytes.Buffer{}
 	_ = hClone.Write(buf)
-	base.Trace("LinkTunnel Response Header:", buf.String())
+	base.Debug("LinkTunnel Response Header:", buf.String())
 
 	hj := w.(http.Hijacker)
 	conn, bufRW, err := hj.Hijack()

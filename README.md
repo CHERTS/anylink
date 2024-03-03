@@ -56,7 +56,7 @@ The AnyLink server is only tested on CentOS 7, CentOS 8, Ubuntu 18.04, Ubuntu 20
 git clone https://github.com/cherts/anylink.git
 
 # Compile reference software version
-# go 1.20.12
+# go 1.22
 # node v16.20.2
 # yarn 1.22.19
 
@@ -343,7 +343,7 @@ ipv4_end = "10.1.2.200"
        -v /home/myconf:/app/conf \
        --restart=always \
        cherts/anylink \
-       --ip_lease=1209600 # IP地址租约时长
+       --ip_lease=1209600 # IP address lease length
    ```
 
 8. Build the image (optional)
