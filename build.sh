@@ -10,7 +10,7 @@ bash build_docker.sh
 
 deploy="anylink-deploy-$ver"
 docker container rm $deploy
-docker container create --name $deploy bjdgyc/anylink:$ver
+docker container create --name $deploy cherts/anylink:$ver
 rm -rf anylink-deploy anylink-deploy.tar.gz
 docker cp -a $deploy:/app ./anylink-deploy
 tar zcf ${deploy}.tar.gz anylink-deploy

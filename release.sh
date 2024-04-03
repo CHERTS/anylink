@@ -26,7 +26,7 @@ function archive() {
   echo $arch_name
   deploy="anylink-$ver-$arch_name"
   docker container rm $deploy
-  docker container create --platform $arch --name $deploy bjdgyc/anylink:$ver
+  docker container create --platform $arch --name $deploy cherts/anylink:$ver
   rm -rf anylink-deploy
   docker cp -a $deploy:/app ./anylink-deploy
   ls -lh anylink-deploy
