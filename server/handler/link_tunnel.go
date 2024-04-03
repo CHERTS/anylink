@@ -92,7 +92,7 @@ func LinkTunnel(w http.ResponseWriter, r *http.Request) {
 		dtlsPort = ss[1]
 	}
 
-	base.Debug(cSess.IpAddr, cSess.MacHw, sess.Username, mobile)
+	base.Info(sess.Username, cSess.IpAddr, cSess.MacHw, cSess.Client, mobile)
 
 	// Detect cipher suites
 	dtlsCiphersuite := checkDtls12Ciphersuite(r.Header.Get("X-Dtls12-Ciphersuite"))
@@ -133,7 +133,7 @@ func LinkTunnel(w http.ResponseWriter, r *http.Request) {
 	}
 	// Allowed routes
 	for _, v := range cSess.Group.RouteInclude {
-		if v.Val == dbdata.All {
+		if strings.ToLower(v.Val) == dbdata.All {
 			continue
 		}
 		HttpAddHeader(w, "X-CSTP-Split-Include", v.IpMask)

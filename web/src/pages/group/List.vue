@@ -197,10 +197,14 @@
                 </el-input>
                 </el-form-item>
                 <el-form-item label="Exclude LAN" prop="allow_lan">
-                <el-switch
-                    v-model="ruleForm.allow_lan"
-                    active-text="After turning it on, the user's local network segment will not be encrypted and transmitted through Anylink.">
-                </el-switch>
+                <!--  active-text="After turning it on, the user's local network segment will not be encrypted and transmitted through anylink." -->
+                <el-switch v-model="ruleForm.allow_lan"></el-switch>
+                <div class="msg-info">
+                 Note: Local network refers to:
+                 The network where the PC running anyconnect client is located, that is, the local routing network segment.
+                 After it is turned on, the data on the PC's local routing network segment will not be forwarded through the tunnel link.
+                 At the same time, the anyconnect client needs to check the local network (Local Lan) switch for the function to take effect.
+                 </div>
                 </el-form-item>
 
                 <el-form-item label="Client DNS" prop="client_dns">
@@ -377,7 +381,7 @@
                 </el-form-item>                
                 <el-form-item label="Domain name exclude" prop="ds_exclude_domains">
                     <el-input type="textarea" :rows="5" v-model="ruleForm.ds_exclude_domains" placeholder="Enter domain names separated by , and match all subdomain names by default, such as: google.com,github.com"></el-input>
-                    <div class="msg-info">Note: Domain name split tunneling only supports the desktop client of AnyConnect, not the mobile client.</div>
+                    <div class="msg-info">Note: Domain name split tunneling only supports the Windows and MacOS desktop clients of AnyConnect, and does not support mobile clients.</div>
                 </el-form-item>
             </el-tab-pane>
             <el-form-item>

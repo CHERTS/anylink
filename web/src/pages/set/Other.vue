@@ -3,11 +3,11 @@
     <el-tabs v-model="activeName" @tab-click="handleClick">
       <el-tab-pane label="Email" name="dataSmtp">
         <el-form
-          :model="dataSmtp"
-          ref="dataSmtp"
-          :rules="rules"
-          label-width="100px"
-          class="tab-one">
+            :model="dataSmtp"
+            ref="dataSmtp"
+            :rules="rules"
+            label-width="100px"
+            class="tab-one">
           <el-form-item label="Server" prop="host">
             <el-input v-model="dataSmtp.host"></el-input>
           </el-form-item>
@@ -19,9 +19,9 @@
           </el-form-item>
           <el-form-item label="Password" prop="password">
             <el-input
-              type="password"
-              v-model="dataSmtp.password"
-              placeholder="If the password is empty, it will not be modified."
+                type="password"
+                v-model="dataSmtp.password"
+                placeholder="If the password is empty, it will not be modified."
             ></el-input>
           </el-form-item>
           <el-form-item label="Encryption" prop="encryption">
@@ -43,18 +43,18 @@
 
       <el-tab-pane label="Audit log" name="dataAuditLog">
         <el-form
-          :model="dataAuditLog"
-          ref="dataAuditLog"
-          :rules="rules"
-          label-width="100px"
-          class="tab-one">
+            :model="dataAuditLog"
+            ref="dataAuditLog"
+            :rules="rules"
+            label-width="100px"
+            class="tab-one">
           <el-form-item label="Audit interval" prop="audit_interval">
             <el-input-number
-              v-model="dataAuditLog.audit_interval"
-              :min="-1"
-              size="small"
-              label="Second"
-              :disabled="true"
+                v-model="dataAuditLog.audit_interval"
+                :min="-1"
+                size="small"
+                label="Second"
+                :disabled="true"
             ></el-input-number>
             Second
             <p class="input_tip">
@@ -64,11 +64,11 @@
           </el-form-item>
           <el-form-item label="Storage duration" prop="life_day">
             <el-input-number
-              v-model="dataAuditLog.life_day"
-              :min="0"
-              :max="365"
-              size="small"
-              label="Days"
+                v-model="dataAuditLog.life_day"
+                :min="0"
+                :max="365"
+                size="small"
+                label="Days"
             ></el-input-number>
             Days
             <p class="input_tip">
@@ -78,16 +78,16 @@
           </el-form-item>
           <el-form-item label="Cleanup time" prop="clear_time">
             <el-time-select
-              v-model="dataAuditLog.clear_time"
-              :picker-options="{
+                v-model="dataAuditLog.clear_time"
+                :picker-options="{
                 start: '00:00',
                 step: '01:00',
                 end: '23:00',
               }"
-              editable="false,"
-              size="small"
-              placeholder="Please choose"
-              style="width: 130px"
+                :editable="false"
+                size="small"
+                placeholder="Please choose"
+                style="width: 130px"
             >
             </el-time-select>
           </el-form-item>
@@ -99,22 +99,22 @@
       </el-tab-pane>
       <el-tab-pane label="Certificate" name="datacertManage">
         <el-tabs
-          tab-position="left"
-          v-model="datacertManage"
-          @tab-click="handleClick">
+            tab-position="left"
+            v-model="datacertManage"
+            @tab-click="handleClick">
           <el-tab-pane label="Custom certificate" name="customCert">
             <el-form
-              ref="customCert"
-              :model="customCert"
-              label-width="100px"
-              size="small"
-              class="tab-one">
+                ref="customCert"
+                :model="customCert"
+                label-width="100px"
+                size="small"
+                class="tab-one">
               <el-form-item>
                 <el-upload
-                  class="uploadCert"
-                  :before-upload="beforeCertUpload"
-                  :action="certUpload"
-                  :limit="1">
+                    class="uploadCert"
+                    :before-upload="beforeCertUpload"
+                    :action="certUpload"
+                    :limit="1">
                   <el-button size="mini" icon="el-icon-plus" slot="trigger">Certificate file</el-button>
                   <el-tooltip
                     class="item"
@@ -219,34 +219,42 @@
             </el-input>
           </el-form-item>
 
+          <el-form-item label="Custom homepage status code" prop="homecode">
+            <el-input-number
+                v-model="dataOther.homecode"
+                :min="0"
+                :max="1000"
+            ></el-input-number>
+          </el-form-item>
+
           <el-form-item label="Customize home page" prop="homeindex">
             <el-input
-              type="textarea"
-              :rows="10"
-              placeholder="Please enter content"
-              v-model="dataOther.homeindex"
+                type="textarea"
+                :rows="10"
+                placeholder="Please enter content"
+                v-model="dataOther.homeindex"
             >
             </el-input>
-            <el-tooltip content="Custom content can refer to the files in the home directory" placement="top">
+            <el-tooltip content="For customized content, please refer to the files in the index_template directory." placement="top">
               <i class="el-icon-question"></i>
             </el-tooltip>
           </el-form-item>
 
-          <el-form-item label="Account email" prop="account_mail">
+          <el-form-item label="Account opening email template" prop="account_mail">
             <el-input
-              type="textarea"
-              :rows="10"
-              placeholder="Please enter content"
-              v-model="dataOther.account_mail"
+                type="textarea"
+                :rows="10"
+                placeholder="Please enter content"
+                v-model="dataOther.account_mail"
             >
             </el-input>
           </el-form-item>
 
           <el-form-item label="Email">
             <iframe
-              width="500px"
-              height="300px"
-              :srcdoc="dataOther.account_mail"
+                width="500px"
+                height="300px"
+                :srcdoc="dataOther.account_mail"
             >
             </iframe>
           </el-form-item>
@@ -296,19 +304,19 @@ export default {
           authToken: "",
         },
       },
-      customCert: { cert: "", key: "" },
+      customCert: {cert: "", key: ""},
       dataOther: {},
       rules: {
-        host: { required: true, message: "Please enter server address", trigger: "blur" },
+        host: {required: true, message: "Please enter server address", trigger: "blur"},
         port: [
-          { required: true, message: "Please enter server port", trigger: "blur" },
+          {required: true, message: "Please enter server port", trigger: "blur"},
           {
             type: "number",
             message: "Please enter correct server port",
             trigger: ["blur", "change"],
           },
         ],
-        issuer: { required: true, message: "Please enter system name", trigger: "blur" },
+        issuer: {required: true, message: "Please enter system name", trigger: "blur"},
         domain: {
           required: true,
           message: "Please enter the domain name for which you need to apply for a certificate",
@@ -319,7 +327,7 @@ export default {
           message: "Please enter the email address for applying for the certificate",
           trigger: "blur",
         },
-        name: { required: true, message: "Please select a domain name service provider", trigger: "blur" },
+        name: {required: true, message: "Please select a domain name service provider", trigger: "blur"},
       },
       certUpload: "/set/other/customcert",
       dnsProvider: {

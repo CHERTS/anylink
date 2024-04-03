@@ -46,10 +46,11 @@ func LinkAuth(w http.ResponseWriter, r *http.Request) {
 	cr := ClientRequest{}
 	err = xml.Unmarshal(body, &cr)
 	if err != nil {
+		base.Error(err)
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	// fmt.Printf("%+v \n", cr)
+	base.Trace(fmt.Sprintf("%+v \n", cr))
 	// setCommonHeader(w)
 	if cr.Type == "logout" {
 		// Exit and delete session information
@@ -137,10 +138,10 @@ func LinkAuth(w http.ResponseWriter, r *http.Request) {
 	other := &dbdata.SettingOther{}
 	_ = dbdata.SettingGet(other)
 	rd := RequestData{SessionId: sess.Sid, SessionToken: sess.Sid + "@" + sess.Token,
-		Banner: other.Banner, ProfileHash: profileHash}
+		Banner: other.Banner, ProfileName: base.Cfg.ProfileName, ProfileHash: profileHash}
 	w.WriteHeader(http.StatusOK)
 	tplRequest(tpl_complete, w, rd)
-	base.Debug("login", cr.Auth.Username, userAgent)
+	base.Info("login", cr.Auth.Username, userAgent)
 }
 
 const (
@@ -175,6 +176,7 @@ type RequestData struct {
 	SessionId    string
 	SessionToken string
 	Banner       string
+	ProfileName  string
 	ProfileHash  string
 }
 
@@ -227,7 +229,7 @@ var auth_complete = `<?xml version="1.0" encoding="UTF-8"?>
         <vpn-profile-manifest>
             <vpn rev="1.0">
                 <file type="profile" service-type="user">
-                    <uri>/profile.xml</uri>
+                    <uri>/profile_{{.ProfileName}}.xml</uri>
                     <hash type="sha1">{{.ProfileHash}}</hash>
                 </file>
             </vpn>

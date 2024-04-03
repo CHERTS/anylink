@@ -11,7 +11,13 @@ cert_file = "/etc/anylink/vpn_cert.pem"
 cert_key = "/etc/anylink/vpn_cert.key"
 files_path = "/var/lib/anylink/files"
 profile = "/etc/anylink/profile.xml"
-# Log directory, if empty, write to standard output
+# Profile name (Configuration used to distinguish different servers)
+# Client storage location
+# Windows 10: %ProgramData%\Cisco\Cisco AnyConnect Secure Mobility Client\Profile
+# Mac OS X: /opt/cisco/anyconnect/profile
+# Linux: /opt/cisco/anyconnect/profile
+profile_name = "anylink"
+# Log directory, default is empty and writes to standard output
 log_path = "/var/log"
 log_level = "debug"
 pprof = true
@@ -33,7 +39,7 @@ jwt_secret = "abcdef.0123456789.abcdef"
 # Service listening address
 server_addr = ":443"
 # Turn on DTLS
-server_dtls = true
+server_dtls = false
 # UDP listening address (any port)
 server_dtls_addr = ":443"
 # Admin service listening address
@@ -44,6 +50,7 @@ proxy_protocol = false
 link_mode = "tun"
 
 # IP address pool assigned by the client
+# The docker environment generally defaults to eth0. In other cases, fill in the information based on the actual network card information.
 ipv4_master = "eth0"
 ipv4_cidr = "192.168.90.0/24"
 ipv4_gateway = "192.168.90.1"
@@ -61,10 +68,16 @@ ip_lease = 86400
 default_group = "one"
 
 # Client failure detection time (seconds) dpd > keepalive
-cstp_keepalive = 5
-cstp_dpd = 12
-mobile_keepalive = 10
-mobile_dpd = 22
+cstp_keepalive = 3
+cstp_dpd = 20
+mobile_keepalive = 4
+mobile_dpd = 60
+
+# Modify according to actual situation
+#cstp_keepalive = 20
+#cstp_dpd = 30
+#mobile_keepalive = 40
+#mobile_dpd = 60
 
 # Set maximum transmission unit
 mtu = 1460
@@ -74,10 +87,10 @@ default_domain = "example.com"
 #default_domain = "example.com abc.example.com"
 
 # Idle link timeout (seconds) - disconnect the link after timeout, 0 turns off this function
-idle_timeout = 1800
+idle_timeout = 0
 # Session expiration time, used for disconnection and reconnection, 0 will never expire
 session_timeout = 3600
-auth_timeout = 0
+#auth_timeout = 0
 audit_interval = 600
 
 show_sql = false
@@ -92,3 +105,6 @@ no_compress_limit = 256
 
 # Client displays detailed error information (be careful to enable online environment)
 display_error = false
+
+#Exclude export ip routing (export ip is not encrypted for transmission)
+exclude_export_ip = true
