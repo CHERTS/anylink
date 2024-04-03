@@ -48,7 +48,7 @@ type ConnSession struct {
 	BandwidthDownAll    atomic.Uint64 // Total downlink bandwidth used
 	closeOnce           sync.Once
 	CloseChan           chan struct{}
-	LastDataTime        atomic.Time // Last data transfer time
+	LastDataTime        atomic.Int64 // Last data transfer time
 	PayloadIn           chan *Payload
 	PayloadOutCstp      chan *Payload // Cstp data
 	PayloadOutDtls      chan *Payload // Dtls data
