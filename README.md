@@ -61,7 +61,7 @@ git clone https://github.com/cherts/anylink.git
 # yarn 1.22.19
 
 cd anylink
-sh build.sh
+bash build.sh
 
 # Make sure to run with root privileges
 cd anylink-deploy
@@ -352,7 +352,7 @@ ipv4_end = "10.1.2.200"
    # Get the warehouse source code
    git clone https://github.com/cherts/anylink.git
    # Build image
-   sh build_docker.sh
+   bash build_docker.sh
    or
    docker build -t anylink -f docker/Dockerfile .
    ```
