@@ -27,10 +27,16 @@ func LinkHome(w http.ResponseWriter, r *http.Request) {
 	if err := dbdata.SettingGet(index); err != nil {
 		return
 	}
-	w.WriteHeader(http.StatusOK)
-	if index.Homeindex == "" {
-		index.Homeindex = "AnyLink is an enterprise-level remote office SSL VPN software that can support multiple people online at the same time."
+
+	if index.Homecode > 0 {
+		w.WriteHeader(index.Homecode)
+	} else {
+		w.WriteHeader(http.StatusOK)
 	}
+
+	// if index.Homeindex == "" {
+	// 	index.Homeindex = "AnyLink is an enterprise-level remote office SSL VPN software that can support multiple people online at the same time."
+	// }
 	fmt.Fprintln(w, index.Homeindex)
 }
 

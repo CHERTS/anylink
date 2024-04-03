@@ -12,17 +12,18 @@ import (
 )
 
 const (
-	UserAuthFail      = 0 // Authentication failed
-	UserAuthSuccess   = 1 // Authentication successful
-	UserConnected     = 2 // Connection successful
-	UserLogout        = 3 // User logout
-	UserLogoutLose    = 0 // User disconnected
-	UserLogoutBanner  = 1 // Cancel user banner pop-up window
-	UserLogoutClient  = 2 // User actively logs out
-	UserLogoutTimeout = 3 // User logs out after timeout
-	UserLogoutAdmin   = 4 // The account was kicked offline by the administrator
-	UserLogoutExpire  = 5 // The account expired and was kicked offline.
-	UserIdleTimeout   = 6 // User idle link timeout
+	UserAuthFail      = 0  // Authentication failed
+	UserAuthSuccess   = 1  // Authentication successful
+	UserConnected     = 2  // Connection successful
+	UserLogout        = 3  // User logout
+	UserLogoutLose    = 0  // User disconnected
+	UserLogoutBanner  = 1  // Cancel user banner pop-up window
+	UserLogoutClient  = 2  // User actively logs out
+	UserLogoutTimeout = 3  // User logs out after timeout
+	UserLogoutAdmin   = 4  // The account was kicked offline by the administrator
+	UserLogoutExpire  = 5  // The account expired and was kicked offline.
+	UserIdleTimeout   = 6  // User idle link timeout
+	UserLogoutOneAdmin = 7 // The account was offlined by the administrator with one click
 )
 
 type UserActLogProcess struct {
@@ -57,13 +58,14 @@ var (
 			3: "AnyLink",
 		},
 		InfoOps: []string{ // Information
-			UserLogoutLose:    "User disconnected",
-			UserLogoutBanner:  "User cancels pop-up window/logout initiated by client",
-			UserLogoutClient:  "User/client actively disconnects",
-			UserLogoutTimeout: "Session expired and was kicked offline",
-			UserLogoutAdmin:   "The account was kicked offline by the administrator",
-			UserLogoutExpire:  "The account expired and was kicked offline.",
-			UserIdleTimeout:   "User idle link timeout",
+			UserLogoutLose:     "User disconnected",
+			UserLogoutBanner:   "User cancels pop-up window/logout initiated by client",
+			UserLogoutClient:   "User/client actively disconnects",
+			UserLogoutTimeout:  "Session expired and was kicked offline",
+			UserLogoutAdmin:    "The account was kicked offline by the administrator",
+			UserLogoutExpire:   "The account expired and was kicked offline.",
+			UserIdleTimeout:    "User idle link timeout",
+			UserLogoutOneAdmin: "The account was offline by the administrator with one click",
 		},
 	}
 )
@@ -126,6 +128,9 @@ func (ua *UserActLogProcess) GetStatusOpsWithTag() interface{} {
 }
 
 func (ua *UserActLogProcess) GetInfoOpsById(id uint8) string {
+	if int(id) >= len(ua.InfoOps) {
+		return "Unknown message type"
+	}
 	return ua.InfoOps[id]
 }
 
@@ -139,7 +144,7 @@ func (ua *UserActLogProcess) ParseUserAgent(userAgent string) (os_idx, client_id
 	os_idx = 0
 	if strings.Contains(userAgent, "windows") {
 		os_idx = 1
-	} else if strings.Contains(userAgent, "mac os") || strings.Contains(userAgent, "darwin_i386") {
+	} else if strings.Contains(userAgent, "mac os") || strings.Contains(userAgent, "darwin_i386") || strings.Contains(userAgent, "darwin_amd64") || strings.Contains(userAgent, "darwin_arm64") {
 		os_idx = 2
 	} else if strings.Contains(userAgent, "darwin_arm") || strings.Contains(userAgent, "apple") {
 		os_idx = 5

@@ -4,12 +4,16 @@ import (
 	"fmt"
 
 	"github.com/cherts/anylink/base"
+	"github.com/cherts/anylink/pkg/utils"
 	"github.com/cherts/anylink/sessdata"
 	"github.com/coreos/go-iptables/iptables"
 	"github.com/songgao/water"
 )
 
 func checkTun() {
+	//Test ip command
+	base.CheckModOrLoad("tun")
+
 	// Test tun
 	cfg := water.Config{
 		DeviceType: water.TUN,
@@ -21,16 +25,14 @@ func checkTun() {
 	}
 	defer ifce.Close()
 
-	// test ip command
-	base.CheckModOrLoad("tun")
-
 	cmdstr1 := fmt.Sprintf("ip link set dev %s up mtu %s multicast off", ifce.Name(), "1399")
 	err = execCmd([]string{cmdstr1})
 	if err != nil {
 		base.Fatal("testTun err: ", err)
 	}
 	// Enable server forwarding
-	if err := execCmd([]string{"sysctl -w net.ipv4.ip_forward=1"}); err != nil {
+	err = execCmd([]string{"sysctl -w net.ipv4.ip_forward=1"})
+	if err != nil {
 		base.Fatal(err)
 	}
 	if base.Cfg.IptablesNat {
@@ -44,15 +46,28 @@ func checkTun() {
 		// Fix rockyos nat not taking effect
 		base.CheckModOrLoad("iptable_filter")
 		base.CheckModOrLoad("iptable_nat")
+		// base.CheckModOrLoad("xt_comment")
 
-		natRule := []string{"-s", base.Cfg.Ipv4CIDR, "-o", base.Cfg.Ipv4Master, "-j", "MASQUERADE"}
-		forwardRule := []string{"-j", "ACCEPT"}
-		if natExists, _ := ipt.Exists("nat", "POSTROUTING", natRule...); !natExists {
-			ipt.Insert("nat", "POSTROUTING", 1, natRule...)
+		// add notes
+		natRule := []string{"-s", base.Cfg.Ipv4CIDR, "-o", base.Cfg.Ipv4Master, "-m", "comment",
+			"--comment", "AnyLink", "-j", "MASQUERADE"}
+		if base.InContainer {
+			natRule = []string{"-s", base.Cfg.Ipv4CIDR, "-o", base.Cfg.Ipv4Master, "-j", "MASQUERADE"}
 		}
-		if forwardExists, _ := ipt.Exists("filter", "FORWARD", forwardRule...); !forwardExists {
-			ipt.Insert("filter", "FORWARD", 1, forwardRule...)
+		err = ipt.InsertUnique("nat", "POSTROUTING", 1, natRule...)
+		if err != nil {
+			base.Error(err)
 		}
+		// add notes
+		forwardRule := []string{"-m", "comment", "--comment", "AnyLink", "-j", "ACCEPT"}
+		if base.InContainer {
+			forwardRule = []string{"-j", "ACCEPT"}
+		}
+		err = ipt.InsertUnique("filter", "FORWARD", 1, forwardRule...)
+		if err != nil {
+			base.Error(err)
+		}
+
 		base.Info(ipt.List("nat", "POSTROUTING"))
 		base.Info(ipt.List("filter", "FORWARD"))
 	}
@@ -74,7 +89,8 @@ func LinkTun(cSess *sessdata.ConnSession) error {
 
 	// View alias information through ip link show
 
-	cmdstr1 := fmt.Sprintf("ip link set dev %s up mtu %d multicast off alias %s.%s", ifce.Name(), cSess.Mtu, cSess.Group.Name, cSess.Username)
+	alias := utils.ParseName(cSess.Group.Name + "." + cSess.Username)
+	cmdstr1 := fmt.Sprintf("ip link set dev %s up mtu %d multicast off alias %s", ifce.Name(), cSess.Mtu, alias)
 	cmdstr2 := fmt.Sprintf("ip addr add dev %s local %s peer %s/32",
 		ifce.Name(), base.Cfg.Ipv4Gateway, cSess.IpAddr)
 	err = execCmd([]string{cmdstr1, cmdstr2})

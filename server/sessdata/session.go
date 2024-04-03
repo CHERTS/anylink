@@ -13,7 +13,6 @@ import (
 	"github.com/cherts/anylink/base"
 	"github.com/cherts/anylink/dbdata"
 	mapset "github.com/deckarep/golang-set"
-	atomic2 "go.uber.org/atomic"
 )
 
 var (
@@ -41,15 +40,15 @@ type ConnSession struct {
 	CstpDpd             int
 	Group               *dbdata.Group
 	Limit               *LimitRater
-	BandwidthUp         atomic2.Uint32 // Use upstream bandwidth Byte
-	BandwidthDown       atomic2.Uint32 // Use downlink bandwidth Byte
-	BandwidthUpPeriod   atomic2.Uint32 // The total amount of the previous period
-	BandwidthDownPeriod atomic2.Uint32
-	BandwidthUpAll      atomic2.Uint64 // Total amount of uplink bandwidth used
-	BandwidthDownAll    atomic2.Uint64 // Total downlink bandwidth used
+	BandwidthUp         atomic.Uint32 // Use upstream bandwidth Byte
+	BandwidthDown       atomic.Uint32 // Use downlink bandwidth Byte
+	BandwidthUpPeriod   atomic.Uint32 // The total amount of the previous period
+	BandwidthDownPeriod atomic.Uint32
+	BandwidthUpAll      atomic.Uint64 // Total amount of uplink bandwidth used
+	BandwidthDownAll    atomic.Uint64 // Total downlink bandwidth used
 	closeOnce           sync.Once
 	CloseChan           chan struct{}
-	LastDataTime        atomic2.Time // Last data transfer time
+	LastDataTime        atomic.Int64 // Last data transfer time
 	PayloadIn           chan *Payload
 	PayloadOutCstp      chan *Payload // Cstp data
 	PayloadOutDtls      chan *Payload // Dtls data
@@ -220,7 +219,7 @@ func (s *Session) NewConn() *ConnSession {
 		PayloadOutDtls: make(chan *Payload, 64),
 		dSess:          &atomic.Value{},
 	}
-	cSess.LastDataTime.Store(time.Now())
+	cSess.LastDataTime.Store(time.Now().Unix())
 
 	dSess := &DtlsSession{
 		isActive: -1,
@@ -464,7 +463,7 @@ func CloseSess(token string, code ...uint8) {
 		sess.CSess.Close()
 		return
 	}
-	AddUserActLogBySess(sess)
+	AddUserActLogBySess(sess, code...)
 }
 
 func CloseCSess(token string) {
@@ -501,7 +500,7 @@ func AddUserActLog(cs *ConnSession) {
 	dbdata.UserActLogIns.Add(ua, cs.UserAgent)
 }
 
-func AddUserActLogBySess(sess *Session) {
+func AddUserActLogBySess(sess *Session, code ...uint8) {
 	ua := dbdata.UserActLog{
 		Username:        sess.Username,
 		GroupName:       sess.Group,
@@ -512,5 +511,8 @@ func AddUserActLogBySess(sess *Session) {
 		Status:          dbdata.UserLogout,
 	}
 	ua.Info = dbdata.UserActLogIns.GetInfoOpsById(dbdata.UserLogoutBanner)
+	if len(code) > 0 {
+		ua.Info = dbdata.UserActLogIns.GetInfoOpsById(code[0])
+	}
 	dbdata.UserActLogIns.Add(ua, sess.UserAgent)
 }

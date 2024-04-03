@@ -1,6 +1,7 @@
 package dbdata
 
 import (
+	"net/http"
 	"time"
 
 	"github.com/cherts/anylink/base"
@@ -121,6 +122,7 @@ func addInitData() error {
 	other := &SettingOther{
 		LinkAddr:    "vpn.xxx.com",
 		Banner:      "You have connected to the company network, please use it in accordance with company regulations.\nPlease do not perform non-work downloading and video activities!",
+		Homecode:    http.StatusOK,
 		Homeindex:   "AnyLink is an enterprise-level remote office sslvpn software that can support multiple people using it online at the same time.",
 		AccountMail: accountMail,
 	}
@@ -142,13 +144,25 @@ func addInitData() error {
 	}
 
 	g1 := Group{
-		Name:         "ops",
+		Name:         "all",
 		AllowLan:     true,
 		ClientDns:    []ValData{{Val: "114.114.114.114"}},
 		RouteInclude: []ValData{{Val: All}},
 		Status:       1,
 	}
 	err = SetGroup(&g1)
+	if err != nil {
+		return err
+	}
+
+	g2 := Group{
+		Name:         "ops",
+		AllowLan:     true,
+		ClientDns:    []ValData{{Val: "114.114.114.114"}},
+		RouteInclude: []ValData{{Val: "10.0.0.0/8"}},
+		Status:       1,
+	}
+	err = SetGroup(&g2)
 	if err != nil {
 		return err
 	}
@@ -169,10 +183,13 @@ const accountMail = `<p>Hello, {{.Issuer}}:</p>
     PIN code: <b>{{.PinCode}}</b> <br/>
     <!-- 
     User dynamic code (expires after 3 days):<br/>
-    <img src="{{.OtpImg}}"/>
+    <img src="{{.OtpImg}}"/><br/>
+    User dynamic code (please keep it properly):<br/>
+    <img src="{{.OtpImgBase64}}"/><br/>
+    The following is the way to write it that is compatible with gmail
     -->
     User OTP code (please save it):<br/>
-    <img src="{{.OtpImgBase64}}"/>
+    <img src="cid:userOtpQr.png" alt="userOtpQr" /><br/>
 </p>
 <div>
     Instructions for use:

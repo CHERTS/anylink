@@ -10,7 +10,11 @@
 
 > Please use your mobile phone to install freeotp, and then scan the otp QR code. The generated number is the dynamic code.
 
-### remote Desktop connection
+### User policy issues
+
+> As long as there is a user policy, the group policy will not take effect, which is equivalent to overwriting the configuration of the group policy.
+
+### Remote Desktop connection
 
 > This software already supports anyconnect connection in remote desktop.
 

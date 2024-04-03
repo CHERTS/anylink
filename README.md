@@ -3,9 +3,10 @@
 [![Go](https://github.com/cherts/anylink/workflows/Go/badge.svg?branch=main)](https://github.com/cherts/anylink/actions)
 [![PkgGoDev](https://pkg.go.dev/badge/github.com/cherts/anylink)](https://pkg.go.dev/github.com/cherts/anylink)
 [![Go Report Card](https://goreportcard.com/badge/github.com/cherts/anylink)](https://goreportcard.com/report/github.com/cherts/anylink)
-[![codecov](https://codecov.io/gh/cherts/anylink/branch/master/graph/badge.svg?token=JTFLIIIBQ0)](https://codecov.io/gh/cherts/anylink)
+[![codecov](https://codecov.io/gh/cherts/anylink/graph/badge.svg?token=JTFLIIIBQ0)](https://codecov.io/gh/cherts/anylink)
 ![GitHub release](https://img.shields.io/github/v/release/cherts/anylink)
-![GitHub downloads)](https://img.shields.io/github/downloads/cherts/anylink/total)
+![GitHub downloads total)](https://img.shields.io/github/downloads/cherts/anylink/total)
+![GitHub Downloads (all assets, latest release)](https://img.shields.io/github/downloads/cherts/anylink/latest/total)
 [![Docker pulls)](https://img.shields.io/docker/pulls/cherts/anylink.svg)](https://hub.docker.com/r/cherts/anylink)
 ![LICENSE](https://img.shields.io/github/license/cherts/anylink)
 
@@ -22,7 +23,7 @@ Protocol development, and draws on the development ideas of [ocserv](http://ocse
 
 AnyLink uses TLS/DTLS for data encryption, so an RSA or ECC certificate is required. You can apply for a free SSL certificate through Let's Encrypt and TrustAsia.
 
-The AnyLink server is only tested on CentOS 7, CentOS 8, Ubuntu 18.04, Ubuntu 20.04 and Ubuntu 22.04. If it needs to be installed on other systems, the server needs to support the tun/tap function and ip setting command.
+The AnyLink server is only tested on CentOS 7, CentOS 8, Ubuntu 18.04, Ubuntu 20.04 and Ubuntu 22.04. If it needs to be installed on other systems, the server needs to support the tun/tap function and ip setting command, iptables command.
 
 ## Screenshot
 
@@ -50,17 +51,20 @@ The AnyLink server is only tested on CentOS 7, CentOS 8, Ubuntu 18.04, Ubuntu 20
 
 ### Compile and install by yourself
 
-> Golang >= 1.19 and nodejs >= 16.x and yarn >= v1.22.x need to be installed in advance.
+> Docker needs to be installed in advance
 
 ```shell
 git clone https://github.com/cherts/anylink.git
 
-# Compile reference software version
+# docker compilation reference software version (no installation required)
 # go 1.22
 # node v16.20.2
 # yarn 1.22.19
 
 cd anylink
+# Compile front-end
+bash build_web.sh
+# Compile anylink-deploy release files
 bash build.sh
 
 # Make sure to run with root privileges
@@ -82,10 +86,11 @@ sudo ./anylink
 - [x] Compatible with AnyConnect
 - [x] Compatible with OpenConnect
 - [x] Nat access mode based on tun device
-- [x] Tap device based bridge access mode
+- [x] Bridged access mode based on tun device
 - [x] Bridged access mode based on macvtap device
 - [x] Support [proxy protocol v1&v2](http://www.haproxy.org/download/2.2/doc/proxy-protocol.txt) protocol
 - [x] User group support
+- [x] User group policy support
 - [x] Multi-user support
 - [x] User policy support
 - [x] TOTP token support
@@ -93,10 +98,15 @@ sudo ./anylink
 - [x] Traffic rate limit
 - [x] Backend management interface
 - [x] Access rights management
+- [x] User activity audit function
 - [x] IP access audit function
 - [x] Domain name dynamic split tunnel (domain name routing function)
 - [x] radius authentication support
 - [x] LDAP authentication support
+- [x] Automatically disconnect when idle link times out
+- [x] Traffic compression function
+- [x] Automatic release of egress IP
+- [x] Support configuration differentiation of multiple services
 - [ ] Bridge access mode based on ipvtap device
 
 ## Config
@@ -118,6 +128,8 @@ sudo ./anylink
 ```
 
 > Database configuration example
+>
+> Database table structure is automatically generated, no need to manually import (please grant DDL permission)
 
 | db_type  | db_source                                              |
 |----------|--------------------------------------------------------|
@@ -140,6 +152,16 @@ sudo ./anylink
 
 ## Setting
 
+### Dependency settings
+
+> Server-side dependency installation:
+>
+> centos: yum install iptables iproute
+>
+> ubuntu: apt-get install iptables iproute2
+
+### link_mode setting
+
 > One of the following parameters must be set
 
 To select the network mode, you need to configure the `link_mode` parameter, such as `link_mode="tun"`, `link_mode="macvtap"`, `link_mode="tap"(not recommended)` and other parameters.
@@ -154,6 +176,7 @@ mode, please confirm that the virtual machine's network card is enabled in promi
 1. Enable server forwarding
 
 ```shell
+# The new version supports automatic setting of IP forwarding
 # file: /etc/sysctl.conf
 net.ipv4.ip_forward = 1
 
@@ -202,18 +225,50 @@ Next hop: 10.1.2.10
 
 3. Just connect using the AnyConnect client
 
-### macvtap settings
+#### Bridge settings
 
-1. Setup profile
+1. Set up the configuration file
 
 > macvtap setting is relatively simple, you only need to configure the corresponding parameters.
+>
+> Network requirements: The network needs to support ARP transmission, and ordinary intranet IP can be announced through ARP.
+>
+> Network restrictions: cannot be used in cloud environment, cannot be used in network card mac plus white environment, cannot be used in 802.1x certified network
+>
 > The following parameters can be viewed by executing `ip a`
 
+1.1 arp_proxy
+
 ```
+
+# file: /etc/sysctl.conf
+net.ipv4.conf.all.proxy_arp = 1
+
+#Execute the following command
+sysctl -w net.ipv4.conf.all.proxy_arp=1
+
+Configuration file modification:
+
 # First turn off the nat forwarding function
 iptables_nat = false
 
-# The master network card needs to turn on promiscuous mode
+
+link_mode = "tun"
+#Internal network main network card name
+ipv4_master = "eth0"
+#The following network segments need to be set the same as the ipv4_master network card
+ipv4_cidr = "10.1.2.0/24"
+ipv4_gateway = "10.1.2.99"
+ipv4_start = "10.1.2.100"
+ipv4_end = "10.1.2.200"
+
+```
+
+1.2 macvtap
+
+```
+
+# Command line execution master network card needs to turn on promiscuous mode
 ip link set dev eth0 promisc on
 
 #=====================#
@@ -223,10 +278,9 @@ ip link set dev eth0 promisc on
 iptables_nat = false
 
 link_mode = "macvtap"
-
-# Internal network main network card name
+#Internal network main network card name
 ipv4_master = "eth0"
-# The following network segments need to be set the same as the ipv4_master network card
+#The following network segments need to be set the same as the ipv4_master network card
 ipv4_cidr = "10.1.2.0/24"
 ipv4_gateway = "10.1.2.1"
 ipv4_start = "10.1.2.100"
@@ -364,6 +418,13 @@ Please go to [question address](doc/question.md) for detailed information
 ## Discussion
 
 Telegram: @cherts
+
+## Support Client
+
+- [AnyConnect Secure Client](https://www.cisco.com/) (Can be downloaded through group files: Windows/macOS/Linux/Android/iOS)
+- [OpenConnect](https://gitlab.com/openconnect/openconnect) (Windows/macOS/Linux)
+- [Mikata AnyLink Secure Client](https://github.com/tlslink/anylink-client) (Windows/macOS/Linux)
+- [Third-party client download address](https://cisco.yangpin.link) (Windows/macOS/Linux/Android/iOS)
 
 ## Contribution
 

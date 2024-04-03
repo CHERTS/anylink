@@ -10,6 +10,9 @@ db_source = "./conf/anylink.db"
 cert_file = "./conf/vpn_cert.pem"
 cert_key = "./conf/vpn_cert.key"
 files_path = "./conf/files"
+
+# Log directory, default is empty and writes to standard output
+#log_path = "./log"
 # Log level
 log_level = "debug"
 
@@ -29,7 +32,7 @@ jwt_secret = "abcdef.0123456789.abcdef"
 # Service listening address
 server_addr = ":443"
 # Enable DTLS
-server_dtls = true
+server_dtls = false
 # UDP listening address (any port)
 server_dtls_addr = ":443"
 # Admin service listening address
@@ -43,6 +46,7 @@ max_user_client = 3
 # Virtual network type [tun macvtap]
 link_mode = "tun"
 # IP address pool assigned by the client
+# The docker environment generally defaults to eth0. In other cases, fill in the information based on the actual network card information.
 ipv4_master = "eth0"
 ipv4_cidr = "192.168.90.0/24"
 ipv4_gateway = "192.168.90.1"

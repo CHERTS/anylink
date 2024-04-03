@@ -17,6 +17,7 @@ import (
 	"github.com/cherts/anylink/dbdata"
 	"github.com/cherts/anylink/sessdata"
 	"github.com/skip2/go-qrcode"
+	mail "github.com/xhit/go-simple-mail/v2"
 )
 
 func UserList(w http.ResponseWriter, r *http.Request) {
@@ -272,5 +273,13 @@ func userAccountMail(user *dbdata.User) error {
 		return err
 	}
 	// fmt.Println(w.String())
-	return SendMail(base.Cfg.Issuer+"Platform notification", user.Email, w.String())
+	imgData, _ := userOtpQr(user.Id, false)
+	attach := &mail.File{
+		MimeType: "image/png",
+		Name:     "userOtpQr.png",
+		Data:     []byte(imgData),
+		Inline:   true,
+	}
+
+	return SendMail(base.Cfg.Issuer, user.Email, w.String(), attach)
 }
