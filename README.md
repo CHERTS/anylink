@@ -1,9 +1,7 @@
 # AnyLink (English version)
 
 [![Go](https://github.com/cherts/anylink/workflows/Go/badge.svg?branch=main)](https://github.com/cherts/anylink/actions)
-[![PkgGoDev](https://pkg.go.dev/badge/github.com/cherts/anylink)](https://pkg.go.dev/github.com/cherts/anylink)
-[![Go Report Card](https://goreportcard.com/badge/github.com/cherts/anylink)](https://goreportcard.com/report/github.com/cherts/anylink)
-[![codecov](https://codecov.io/gh/cherts/anylink/graph/badge.svg?token=JTFLIIIBQ0)](https://codecov.io/gh/cherts/anylink)
+[![codecov](https://codecov.io/gh/cherts/anylink/graph/badge.svg?token=SR1MSCLIDJ)](https://codecov.io/gh/cherts/anylink)
 ![GitHub release](https://img.shields.io/github/v/release/cherts/anylink)
 ![GitHub downloads total)](https://img.shields.io/github/downloads/cherts/anylink/total)
 ![GitHub Downloads (all assets, latest release)](https://img.shields.io/github/downloads/cherts/anylink/latest/total)
