@@ -19,7 +19,7 @@ case $var1 in
   #iptables -nL -t nat
 
   # Start the service and first determine whether the configuration file exists
-   if [[ ! -f /app/conf/profile.xml ]]; then
+  if [[ ! -f /app/conf/profile.xml ]]; then
     /bin/cp -r /home/conf-bak/* /app/conf/
     echo "After the configuration file is initialized, the container will be forcibly exited. Restart the container."
     exit 1
