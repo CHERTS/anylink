@@ -3,148 +3,93 @@
     <el-card>
       <el-form :inline="true">
         <el-form-item>
-          <el-button
-              size="small"
-              type="primary"
-              icon="el-icon-plus"
-              @click="handleEdit('')">Add
+          <el-button size="small" type="primary" icon="el-icon-plus" @click="handleEdit('')">添加
           </el-button>
         </el-form-item>
         <el-form-item>
           <el-dropdown size="small" placement="bottom">
-            <el-upload
-              class="uploaduser"
-              action="uploaduser"
-              accept=".xlsx, .xls"
-              :http-request="upLoadUser"
-              :limit="1"
+            <el-upload class="uploaduser" action="uploaduser" accept=".xlsx, .xls" :http-request="upLoadUser" :limit="1"
               :show-file-list="false">
-              <el-button size="small"  icon="el-icon-upload2" type="primary">Add in batches</el-button>
+              <el-button size="small" icon="el-icon-upload2" type="primary">批量添加</el-button>
             </el-upload>
-          <el-dropdown-menu slot="dropdown">
-            <el-dropdown-item>
-              <el-link style="font-size:12px;" type="success" href="add_user_templates_in_batches.xlsx"><i class="el-icon-download"></i>Download template</el-link>
-            </el-dropdown-item>
-          </el-dropdown-menu>
+            <el-dropdown-menu slot="dropdown">
+              <el-dropdown-item>
+                <el-link style="font-size:12px;" type="success" href="批量添加用户模版.xlsx"><i
+                    class="el-icon-download"></i>下载模版
+                </el-link>
+              </el-dropdown-item>
+            </el-dropdown-menu>
           </el-dropdown>
         </el-form-item>
-        <el-form-item label="Username:">
-          <el-input size="small" v-model="searchData" placeholder="Please enter content" @keydown.enter.native="searchEnterFun"></el-input>
+        <el-form-item label="用户名或姓名或邮箱:">
+          <el-input size="small" v-model="searchData" placeholder="请输入内容"
+            @keydown.enter.native="searchEnterFun"></el-input>
         </el-form-item>
 
         <el-form-item>
-          <el-button
-              size="small"
-              type="primary"
-              icon="el-icon-search"
-              @click="handleSearch()">Search
+          <el-button size="small" type="primary" icon="el-icon-search" @click="handleSearch()">搜索
           </el-button>
-          <el-button
-              size="small"
-              icon="el-icon-refresh"
-              @click="reset">Reset search
+          <el-button size="small" icon="el-icon-refresh" @click="reset">重置搜索
           </el-button>
         </el-form-item>
       </el-form>
 
-      <el-table
-          ref="multipleTable"
-          :data="tableData"
-          border>
+      <el-table ref="multipleTable" :data="tableData" border>
 
-        <el-table-column
-            sortable="true"
-            prop="id"
-            label="ID"
-            width="60">
+        <el-table-column sortable="true" prop="id" label="ID" width="60">
         </el-table-column>
 
-        <el-table-column
-            prop="username"
-            label="Username"
-            width="150">
+        <el-table-column prop="username" label="用户名" width="150">
         </el-table-column>
 
-        <el-table-column
-            prop="nickname"
-            label="Nickname"
-            width="100">
+        <el-table-column prop="nickname" label="姓名" width="100">
         </el-table-column>
 
-        <el-table-column
-            prop="email"
-            label="Email"
-            width="250">
+        <el-table-column prop="email" label="邮箱">
         </el-table-column>
-        <el-table-column
-            prop="otp_secret"
-            label="OTP key"
-            width="100">
+        <el-table-column prop="otp_secret" label="OTP密钥" width="110">
           <template slot-scope="scope">
-            <el-button
-                v-if="!scope.row.disable_otp"
-                type="text"
-                icon="el-icon-view"
-                @click="getOtpImg(scope.row)">
+            <el-button v-if="!scope.row.disable_otp" type="text" icon="el-icon-view" @click="getOtpImg(scope.row)">
               {{ scope.row.otp_secret.substring(0, 6) }}
             </el-button>
           </template>
         </el-table-column>
 
-        <el-table-column
-            prop="groups"
-            label="User group">
+        <el-table-column prop="groups" label="用户组">
           <template slot-scope="scope">
             <el-row v-for="item in scope.row.groups" :key="item">{{ item }}</el-row>
           </template>
         </el-table-column>
 
-        <el-table-column
-            prop="status"
-            label="Status"
-            width="80">
+        <el-table-column prop="status" label="状态" width="70">
           <template slot-scope="scope">
-            <el-tag v-if="scope.row.status === 1" type="success">Enabled</el-tag>
-            <el-tag v-if="scope.row.status === 0" type="danger">Disabled</el-tag>
-            <el-tag v-if="scope.row.status === 2" >Expired</el-tag>
+            <el-tag v-if="scope.row.status === 1" type="success">可用</el-tag>
+            <el-tag v-if="scope.row.status === 0" type="danger">停用</el-tag>
+            <el-tag v-if="scope.row.status === 2">过期</el-tag>
           </template>
         </el-table-column>
 
-        <el-table-column
-            prop="updated_at"
-            label="Update time"
-            :formatter="tableDateFormat">
+        <el-table-column prop="updated_at" label="更新时间" :formatter="tableDateFormat">
         </el-table-column>
 
-        <el-table-column
-            label="Actions"
-            width="210">
+        <el-table-column label="操作" width="210">
           <template slot-scope="scope">
-            <el-button
-                size="mini"
-                type="primary"
-                @click="handleEdit(scope.row)">Edit
+            <el-button size="mini" type="primary" @click="handleEdit(scope.row)">编辑
             </el-button>
 
-            <!--<el-popconfirm
+            <!--            <el-popconfirm
                             class="m-left-10"
                             @onConfirm="handleClick('reset',scope.row)"
-                            title="Are you sure you want to reset your user password and key?">
+                            title="确定要重置用户密码和密钥吗？">
                           <el-button
                               slot="reference"
                               size="mini"
-                              type="warning">Reset
+                              type="warning">重置
                           </el-button>
                         </el-popconfirm>-->
 
-            <el-popconfirm
-                class="m-left-10"
-                @confirm="handleDel(scope.row)"
-                title="Are you sure you want to delete the user?">
-              <el-button
-                  slot="reference"
-                  size="mini"
-                  type="danger">Delete
+            <el-popconfirm class="m-left-10" @confirm="handleDel(scope.row)" title="确定要删除用户吗？">
+              <el-button slot="reference" size="mini" type="danger">删除
               </el-button>
             </el-popconfirm>
 
@@ -154,100 +99,77 @@
 
       <div class="sh-20"></div>
 
-      <el-pagination
-          background
-          layout="prev, pager, next"
-          :pager-count="11"
-          @current-change="pageChange"
-          :current-page="page"
-          :total="count">
+      <el-pagination background layout="prev, pager, next" :pager-count="11" @current-change="pageChange"
+        :current-page="page" :total="count">
       </el-pagination>
 
     </el-card>
 
-    <el-dialog
-        title="OTP key"
-        :visible.sync="otpImgData.visible"
-        width="350px"
-        center>
+    <el-dialog title="OTP密钥" :visible.sync="otpImgData.visible" width="350px" center>
       <div style="text-align: center">{{ otpImgData.username }} : {{ otpImgData.nickname }}</div>
-      <img :src="otpImgData.base64Img" alt="otp-img"/>
+      <img :src="otpImgData.base64Img" alt="otp-img" />
     </el-dialog>
 
-    <!--Add and modify pop-up boxes-->
-    <el-dialog
-        :close-on-click-modal="false"
-        title="Adding user"
-        :visible="user_edit_dialog"
-        @close="disVisible"
-        width="650px"
-        center>
+    <!--新增、修改弹出框-->
+    <el-dialog :close-on-click-modal="false" title="用户" :visible="user_edit_dialog" @close="disVisible" width="650px"
+      center>
 
       <el-form :model="ruleForm" :rules="rules" ref="ruleForm" label-width="100px" class="ruleForm">
-        <el-form-item label="User ID" prop="id">
+        <el-form-item label="用户ID" prop="id">
           <el-input v-model="ruleForm.id" disabled></el-input>
         </el-form-item>
-        <el-form-item label="Username" prop="username">
+        <el-form-item label="用户名" prop="username">
           <el-input v-model="ruleForm.username" :disabled="ruleForm.id > 0"></el-input>
         </el-form-item>
-        <el-form-item label="Nickname" prop="nickname">
+        <el-form-item label="姓名" prop="nickname">
           <el-input v-model="ruleForm.nickname"></el-input>
         </el-form-item>
-        <el-form-item label="Email" prop="email">
+        <el-form-item label="邮箱" prop="email">
           <el-input v-model="ruleForm.email"></el-input>
         </el-form-item>
 
-        <el-form-item label="PIN code" prop="pin_code">
-          <el-input v-model="ruleForm.pin_code" placeholder="If left blank, the system will automatically generate it."></el-input>
+        <el-form-item label="PIN码" prop="pin_code">
+          <el-input v-model="ruleForm.pin_code" placeholder="不填由系统自动生成"></el-input>
         </el-form-item>
 
-        <el-form-item label="Expiration" prop="limittime">
-          <el-date-picker
-            v-model="ruleForm.limittime"
-            type="date"
-            size="small"
-            align="center"
-            style="width:130px"
-            :picker-options="pickerOptions"
-            placeholder="Select date">
+        <el-form-item label="过期时间" prop="limittime">
+          <el-date-picker v-model="ruleForm.limittime" type="date" size="small" align="center" style="width:130px"
+            :picker-options="pickerOptions" placeholder="选择日期">
           </el-date-picker>
         </el-form-item>
-        
-        <el-form-item label="Disable OTP" prop="disable_otp">
-          <el-switch
-              v-model="ruleForm.disable_otp"
-              active-text="After turning on OTP, the user password is [PIN code + OTP dynamic code] (there is no + sign in the middle)">
+
+        <el-form-item label="禁用OTP" prop="disable_otp">
+          <el-switch v-model="ruleForm.disable_otp" active-text="开启OTP后，用户密码为PIN码,OTP密码为扫码后生成的动态码">
           </el-switch>
         </el-form-item>
 
-        <el-form-item label="OTP key" prop="otp_secret" v-if="!ruleForm.disable_otp">
-          <el-input v-model="ruleForm.otp_secret" placeholder="If left blank, the system will automatically generate it."></el-input>
+        <el-form-item label="OTP密钥" prop="otp_secret" v-if="!ruleForm.disable_otp">
+          <el-input v-model="ruleForm.otp_secret" placeholder="不填由系统自动生成"></el-input>
         </el-form-item>
 
-        <el-form-item label="User group" prop="groups">
+        <el-form-item label="用户组" prop="groups">
           <el-checkbox-group v-model="ruleForm.groups">
             <el-checkbox v-for="(item) in grouNames" :key="item" :label="item" :name="item"></el-checkbox>
           </el-checkbox-group>
         </el-form-item>
 
-        <el-form-item label="Send email" prop="send_email">
-          <el-switch
-              v-model="ruleForm.send_email">
+        <el-form-item label="发送邮件" prop="send_email">
+          <el-switch v-model="ruleForm.send_email">
           </el-switch>
         </el-form-item>
 
-        <el-form-item label="Status" prop="status">
+        <el-form-item label="状态" prop="status">
           <el-radio-group v-model="ruleForm.status">
-            <el-radio :label="1" border>Enable</el-radio>
-            <el-radio :label="0" border>Disable</el-radio>
-            <el-radio :label="2" border>Expired</el-radio>
+            <el-radio :label="1" border>启用</el-radio>
+            <el-radio :label="0" border>停用</el-radio>
+            <el-radio :label="2" border>过期</el-radio>
           </el-radio-group>
         </el-form-item>
 
         <el-form-item>
-          <el-button type="primary" @click="submitForm('ruleForm')">Save</el-button>
-          <!--<el-button @click="resetForm('ruleForm')">Reset</el-button>-->
-          <el-button @click="disVisible">Cancel</el-button>
+          <el-button type="primary" @click="submitForm('ruleForm')">保存</el-button>
+          <!--          <el-button @click="resetForm('ruleForm')">重置</el-button>-->
+          <el-button @click="disVisible">取消</el-button>
         </el-form-item>
       </el-form>
 
@@ -265,7 +187,7 @@ export default {
   mixins: [],
   created() {
     this.$emit('update:route_path', this.$route.path)
-    this.$emit('update:route_name', ['Users', 'Users'])
+    this.$emit('update:route_name', ['用户信息', '用户列表'])
   },
   mounted() {
     this.getGroups();
@@ -280,11 +202,11 @@ export default {
       count: 10,
       pickerOptions: {
         disabledDate(time) {
-            return time.getTime() < Date.now();
+          return time.getTime() < Date.now();
         }
       },
       searchData: '',
-      otpImgData: {visible: false, username: '', nickname: '', base64Img: ''},
+      otpImgData: { visible: false, username: '', nickname: '', base64Img: '' },
       ruleForm: {
         send_email: true,
         status: 1,
@@ -292,30 +214,30 @@ export default {
       },
       rules: {
         username: [
-          {required: true, message: 'Please enter username', trigger: 'blur'},
-          {max: 50, message: 'Less than 50 characters long', trigger: 'blur'}
+          { required: true, message: '请输入用户名', trigger: 'blur' },
+          { max: 50, message: '长度小于 50 个字符', trigger: 'blur' }
         ],
         nickname: [
-          {required: true, message: 'Please enter nick name', trigger: 'blur'}
+          { required: true, message: '请输入用户姓名', trigger: 'blur' }
         ],
         email: [
-          {required: true, message: 'Please enter user email', trigger: 'blur'},
-          {type: 'email', message: 'Please input the correct email address', trigger: ['blur', 'change']}
+          { required: true, message: '请输入用户邮箱', trigger: 'blur' },
+          { type: 'email', message: '请输入正确的邮箱地址', trigger: ['blur', 'change'] }
         ],
         password: [
-          {min: 6, message: 'Longer than 6 characters', trigger: 'blur'}
+          { min: 6, message: '长度大于 6 个字符', trigger: 'blur' }
         ],
         pin_code: [
-          {min: 6, message: 'PIN is longer than 6 characters', trigger: 'blur'}
+          { min: 6, message: 'PIN码大于 6 个字符', trigger: 'blur' }
         ],
         date1: [
-          {type: 'date', required: true, message: 'Please select a date', trigger: 'change'}
+          { type: 'date', required: true, message: '请选择日期', trigger: 'change' }
         ],
         groups: [
-          {type: 'array', required: true, message: 'Please select at least one group', trigger: 'change'}
+          { type: 'array', required: true, message: '请至少选择一个组', trigger: 'change' }
         ],
         status: [
-          {required: true}
+          { required: true }
         ],
       },
     }
@@ -326,7 +248,7 @@ export default {
       const formData = new FormData();
       formData.append("file", item.file);
       axios.post('/user/uploaduser', formData, {
-         headers: {
+        headers: {
           'Content-Type': 'multipart/form-data'
         }
       }).then(resp => {
@@ -337,7 +259,7 @@ export default {
           this.$message.error(resp.data.msg);
           this.getData(1);
         }
-        //console.log(resp.data);
+        console.log(resp.data);
       })
     },
     getOtpImg(row) {
@@ -355,7 +277,7 @@ export default {
         this.otpImgData.nickname = row.nickname;
         this.otpImgData.base64Img = 'data:image/png;base64,' + rdata
       }).catch(error => {
-        this.$message.error('Oh, request error');
+        this.$message.error('哦，请求出错');
         console.log(error);
       });
     },
@@ -368,15 +290,15 @@ export default {
         } else {
           this.$message.error(rdata.msg);
         }
-        //console.log(rdata);
+        console.log(rdata);
       }).catch(error => {
-        this.$message.error('Oh, request error');
+        this.$message.error('哦，请求出错');
         console.log(error);
       });
     },
     handleEdit(row) {
       !this.$refs['ruleForm'] || this.$refs['ruleForm'].resetFields();
-      //console.log(row)
+      console.log(row)
       this.user_edit_dialog = true
       if (!row) {
         return;
@@ -388,16 +310,16 @@ export default {
         }
       }).then(resp => {
         var data = resp.data.data
-        // Modify the default of not sending emails
+        // 修改默认不发送邮件
         data.send_email = false
         this.ruleForm = data
       }).catch(error => {
-        this.$message.error('Oh, request error');
+        this.$message.error('哦，请求出错');
         console.log(error);
       });
     },
     handleSearch() {
-      //console.log(this.searchData)
+      console.log(this.searchData)
       this.getData(1, this.searchData)
     },
     pageChange(p) {
@@ -412,28 +334,28 @@ export default {
         }
       }).then(resp => {
         var data = resp.data.data
-        //console.log(data);
+        console.log(data);
         this.tableData = data.datas;
         this.count = data.count
       }).catch(error => {
-        this.$message.error('Oh, request error');
+        this.$message.error('哦，请求出错');
         console.log(error);
       });
     },
     getGroups() {
       axios.get('/group/names', {}).then(resp => {
         var data = resp.data.data
-        //console.log(data.datas);
+        console.log(data.datas);
         this.grouNames = data.datas;
       }).catch(error => {
-        this.$message.error('Oh, request error');
+        this.$message.error('哦，请求出错');
         console.log(error);
       });
     },
     submitForm(formName) {
       this.$refs[formName].validate((valid) => {
         if (!valid) {
-          //console.log('Error submit!');
+          console.log('error submit!!');
           return false;
         }
 
@@ -447,9 +369,9 @@ export default {
           } else {
             this.$message.error(data.msg);
           }
-          //console.log(data);
+          console.log(data);
         }).catch(error => {
-          this.$message.error('Oh, request error');
+          this.$message.error('哦，请求出错');
           console.log(error);
         });
       });
@@ -458,19 +380,17 @@ export default {
       this.$refs[formName].resetFields();
     },
     searchEnterFun(e) {
-        var keyCode = window.event ? e.keyCode : e.which;
-        if (keyCode == 13) {
-            this.handleSearch()
-        }
-    }, 
+      var keyCode = window.event ? e.keyCode : e.which;
+      if (keyCode == 13) {
+        this.handleSearch()
+      }
+    },
     reset() {
-        this.searchData = "";
-        this.handleSearch();
-    },       
+      this.searchData = "";
+      this.handleSearch();
+    },
   },
 }
 </script>
 
-<style scoped>
-
-</style>
+<style scoped></style>

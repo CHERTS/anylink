@@ -42,6 +42,8 @@ server_addr = ":443"
 server_dtls = false
 # UDP listening address (any port)
 server_dtls_addr = ":443"
+# DTLS external mapping port (same as server_dtls_addr if empty)
+advertise_dtls_addr = ""
 # Admin service listening address
 admin_addr = ":8800"
 # Enable tcp proxy protocol
@@ -108,3 +110,39 @@ display_error = false
 
 #Exclude export ip routing (export ip is not encrypted for transmission)
 exclude_export_ip = true
+
+# Log in to the separate verification OTP window
+auth_alone_otp = false
+
+# Encrypt and save user passwords
+encryption_password = false
+
+# Explosion-proof global switch
+anti_brute_force = true
+# Global IP whitelist, multiple IP whitelists separated by commas, supports single IP and CIDR range
+ip_whitelist = "192.168.90.1,172.16.0.0/24"
+
+# The lock time should not exceed the unit time.
+# The maximum number of attempts per unit time, 0 means to disable this function
+max_ban_score = 5
+# Set the unit time (seconds), if exceeded, reset the count
+ban_reset_time = 600
+# Lockout duration after exceeding the maximum number of attempts (seconds)
+lock_time = 300
+
+# The maximum number of attempts per unit time for global users. 0 means to disable this function.
+max_global_user_ban_count = 20
+# Global user setting unit time (seconds)
+global_user_ban_reset_time = 600
+# Global user lockout time (seconds)
+global_user_lock_time = 300
+
+# The maximum number of attempts per unit time for the global IP address. 0 means this function is disabled.
+max_global_ip_ban_count = 40
+# Global IP setting unit time (seconds)
+global_ip_ban_reset_time = 1200
+# Global IP lock time (seconds)
+global_ip_lock_time = 300
+
+# The global lock state preservation life cycle (seconds), if it exceeds, the record will be deleted
+global_lock_state_expiration_time = 3600

@@ -2,11 +2,9 @@ package handler
 
 import (
 	"bytes"
-	"crypto/md5"
 	"encoding/xml"
 	"fmt"
 	"io"
-	"net"
 	"net/http"
 	"net/http/httputil"
 	"strings"
@@ -17,7 +15,10 @@ import (
 	"github.com/cherts/anylink/sessdata"
 )
 
-var profileHash = ""
+var (
+	profileHash = ""
+	certHash    = ""
+)
 
 func LinkAuth(w http.ResponseWriter, r *http.Request) {
 	// TODO Debug information output
@@ -43,7 +44,10 @@ func LinkAuth(w http.ResponseWriter, r *http.Request) {
 	}
 	defer r.Body.Close()
 
-	cr := ClientRequest{}
+	cr := &ClientRequest{
+		RemoteAddr: r.RemoteAddr,
+		UserAgent:  userAgent,
+	}
 	err = xml.Unmarshal(body, &cr)
 	if err != nil {
 		base.Error(err)
@@ -73,8 +77,15 @@ func LinkAuth(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
+
+	// Lock status judgment
+	if !lockManager.CheckLocked(cr.Auth.Username, r.RemoteAddr) {
+		w.WriteHeader(http.StatusTooManyRequests)
+		return
+	}
+
 	// User activity log
-	ua := dbdata.UserActLog{
+	ua := &dbdata.UserActLog{
 		Username:        cr.Auth.Username,
 		GroupName:       cr.GroupSelect,
 		RemoteAddr:      r.RemoteAddr,
@@ -82,13 +93,21 @@ func LinkAuth(w http.ResponseWriter, r *http.Request) {
 		DeviceType:      cr.DeviceId.DeviceType,
 		PlatformVersion: cr.DeviceId.PlatformVersion,
 	}
+
+	sessionData := &AuthSession{
+		ClientRequest: cr,
+		UserActLog:    ua,
+	}
 	// TODO User password verification
-	err = dbdata.CheckUser(cr.Auth.Username, cr.Auth.Password, cr.GroupSelect)
+	ext := map[string]interface{}{"mac_addr": cr.MacAddressList.MacAddress}
+	err = dbdata.CheckUser(cr.Auth.Username, cr.Auth.Password, cr.GroupSelect, ext)
 	if err != nil {
-		base.Warn(err)
+		lockManager.UpdateLoginStatus(cr.Auth.Username, r.RemoteAddr, false) // 记录登录失败状态
+
+		base.Warn(err, r.RemoteAddr)
 		ua.Info = err.Error()
 		ua.Status = dbdata.UserAuthFail
-		dbdata.UserActLogIns.Add(ua, userAgent)
+		dbdata.UserActLogIns.Add(*ua, userAgent)
 
 		w.WriteHeader(http.StatusOK)
 		data := RequestData{Group: cr.GroupSelect, Groups: dbdata.GetGroupNamesNormal(), Error: "Wrong username or password"}
@@ -98,72 +117,62 @@ func LinkAuth(w http.ResponseWriter, r *http.Request) {
 		tplRequest(tpl_request, w, data)
 		return
 	}
-	dbdata.UserActLogIns.Add(ua, userAgent)
-	// if !ok {
-	//	w.WriteHeader(http.StatusOK)
-	//	data := RequestData{Group: cr.GroupSelect, Groups: base.Cfg.UserGroups, Error: "Please activate the user first"}
-	//	tplRequest(tpl_request, w, data)
-	//	return
-	// }
+	dbdata.UserActLogIns.Add(*ua, userAgent)
 
-	// Create new session information
-	sess := sessdata.NewSession("")
-	sess.Username = cr.Auth.Username
-	sess.Group = cr.GroupSelect
-	oriMac := cr.MacAddressList.MacAddress
-	sess.UniqueIdGlobal = cr.DeviceId.UniqueIdGlobal
-	sess.UserAgent = userAgent
-	sess.DeviceType = ua.DeviceType
-	sess.PlatformVersion = ua.PlatformVersion
-	sess.RemoteAddr = r.RemoteAddr
-	// Get the client mac address
-	sess.UniqueMac = true
-	macHw, err := net.ParseMAC(oriMac)
+	v := &dbdata.User{}
+	err = dbdata.One("Username", cr.Auth.Username, v)
 	if err != nil {
-		var sum [16]byte
-		if sess.UniqueIdGlobal != "" {
-			sum = md5.Sum([]byte(sess.UniqueIdGlobal))
-		} else {
-			sum = md5.Sum([]byte(sess.Token))
-			sess.UniqueMac = false
-		}
-		macHw = sum[0:5] // 5 bytes
-		macHw = append([]byte{0x02}, macHw...)
-		sess.MacAddr = macHw.String()
+		base.Info("正在使用第三方认证方式登录")
+		CreateSession(w, r, sessionData)
+		return
 	}
-	sess.MacHw = macHw
-	// Unify the format of macAddr
-	sess.MacAddr = macHw.String()
+	// User OTP verification
+	if base.Cfg.AuthAloneOtp && !v.DisableOtp {
+		lockManager.UpdateLoginStatus(cr.Auth.Username, r.RemoteAddr, true) // 重置OTP验证计数
 
-	other := &dbdata.SettingOther{}
-	_ = dbdata.SettingGet(other)
-	rd := RequestData{SessionId: sess.Sid, SessionToken: sess.Sid + "@" + sess.Token,
-		Banner: other.Banner, ProfileName: base.Cfg.ProfileName, ProfileHash: profileHash}
-	w.WriteHeader(http.StatusOK)
-	tplRequest(tpl_complete, w, rd)
-	base.Info("login", cr.Auth.Username, userAgent)
+		sessionID, err := GenerateSessionID()
+		if err != nil {
+			base.Error("Failed to generate session ID: ", err)
+			http.Error(w, "Failed to generate session ID", http.StatusInternalServerError)
+			return
+		}
+
+		sessionData.ClientRequest.Auth.OtpSecret = v.OtpSecret
+		SessStore.SaveAuthSession(sessionID, sessionData)
+
+		SetCookie(w, "auth-session-id", sessionID, 0)
+
+		data := RequestData{}
+		w.WriteHeader(http.StatusOK)
+		tplRequest(tpl_otp, w, data)
+		return
+	}
+	CreateSession(w, r, sessionData)
 }
 
 const (
 	tpl_request = iota
 	tpl_complete
+	tpl_otp
 )
 
 func tplRequest(typ int, w io.Writer, data RequestData) {
-	if typ == tpl_request {
+	switch typ {
+	case tpl_request:
 		t, _ := template.New("auth_request").Parse(auth_request)
 		_ = t.Execute(w, data)
-		return
+	case tpl_complete:
+		if data.Banner != "" {
+			buf := new(bytes.Buffer)
+			_ = xml.EscapeText(buf, []byte(data.Banner))
+			data.Banner = buf.String()
+		}
+		t, _ := template.New("auth_complete").Parse(auth_complete)
+		_ = t.Execute(w, data)
+	case tpl_otp:
+		t, _ := template.New("auth_otp").Parse(auth_otp)
+		_ = t.Execute(w, data)
 	}
-
-	if data.Banner != "" {
-		buf := new(bytes.Buffer)
-		xml.EscapeText(buf, []byte(data.Banner))
-		data.Banner = buf.String()
-	}
-
-	t, _ := template.New("auth_complete").Parse(auth_complete)
-	_ = t.Execute(w, data)
 }
 
 // Set output information
@@ -178,6 +187,7 @@ type RequestData struct {
 	Banner       string
 	ProfileName  string
 	ProfileHash  string
+	CertHash     string
 }
 
 var auth_request = `<?xml version="1.0" encoding="UTF-8"?>
@@ -223,7 +233,7 @@ var auth_complete = `<?xml version="1.0" encoding="UTF-8"?>
     </capabilities>
     <config client="vpn" type="private">
         <vpn-base-config>
-            <server-cert-hash>240B97A685B2BFA66AD699B90AAC49EA66495D69</server-cert-hash>
+            <server-cert-hash>{{.CertHash}}</server-cert-hash>
         </vpn-base-config>
         <opaque is-for="vpn-client"></opaque>
         <vpn-profile-manifest>

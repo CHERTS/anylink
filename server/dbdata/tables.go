@@ -11,6 +11,7 @@ type Group struct {
 	Note             string                 `json:"note" xorm:"varchar(255)"`
 	AllowLan         bool                   `json:"allow_lan" xorm:"Bool"`
 	ClientDns        []ValData              `json:"client_dns" xorm:"Text"`
+	SplitDns         []ValData              `json:"split_dns" xorm:"Text"`
 	RouteInclude     []ValData              `json:"route_include" xorm:"Text"`
 	RouteExclude     []ValData              `json:"route_exclude" xorm:"Text"`
 	DsExcludeDomains string                 `json:"ds_exclude_domains" xorm:"Text"`
@@ -29,7 +30,7 @@ type User struct {
 	Nickname string `json:"nickname" xorm:"varchar(255)"`
 	Email    string `json:"email" xorm:"varchar(255)"`
 	// Password  string    `json:"password"`
-	PinCode    string     `json:"pin_code" xorm:"varchar(32)"`
+	PinCode    string     `json:"pin_code" xorm:"varchar(64)"`
 	LimitTime  *time.Time `json:"limittime,omitempty" xorm:"Datetime limittime"` // When the value is null, the front end does not display
 	OtpSecret  string     `json:"otp_secret" xorm:"varchar(255)"`
 	DisableOtp bool       `json:"disable_otp" xorm:"Bool"` // disable otp
@@ -45,7 +46,7 @@ type UserActLog struct {
 	Username        string    `json:"username" xorm:"varchar(60)"`
 	GroupName       string    `json:"group_name" xorm:"varchar(60)"`
 	IpAddr          string    `json:"ip_addr" xorm:"varchar(32)"`
-	RemoteAddr      string    `json:"remote_addr" xorm:"varchar(32)"`
+	RemoteAddr      string    `json:"remote_addr" xorm:"varchar(42)"`
 	Os              uint8     `json:"os" xorm:"not null default 0 Int"`
 	Client          uint8     `json:"client" xorm:"not null default 0 Int"`
 	Version         string    `json:"version" xorm:"varchar(15)"`
@@ -66,12 +67,12 @@ type Setting struct {
 type AccessAudit struct {
 	Id          int       `json:"id" xorm:"pk autoincr not null"`
 	Username    string    `json:"username" xorm:"varchar(60) not null"`
-	Protocol    uint8     `json:"protocol" xorm:"not null"`
+	Protocol    uint8     `json:"protocol" xorm:"Int not null"`
 	Src         string    `json:"src" xorm:"varchar(60) not null"`
-	SrcPort     uint16    `json:"src_port" xorm:"not null"`
+	SrcPort     uint16    `json:"src_port" xorm:"Int not null"`
 	Dst         string    `json:"dst" xorm:"varchar(60) not null"`
-	DstPort     uint16    `json:"dst_port" xorm:"not null"`
-	AccessProto uint8     `json:"access_proto" xorm:"default 0"`                // access proto
+	DstPort     uint16    `json:"dst_port" xorm:"Int not null"`
+	AccessProto uint8     `json:"access_proto" xorm:"Int default 0"`            // access proto
 	Info        string    `json:"info" xorm:"varchar(255) not null default ''"` // Details
 	CreatedAt   time.Time `json:"created_at" xorm:"DateTime"`
 }

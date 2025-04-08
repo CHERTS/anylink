@@ -2,7 +2,6 @@ package sessdata
 
 import (
 	"fmt"
-	"math/rand"
 	"net"
 	"strconv"
 	"strings"
@@ -12,6 +11,7 @@ import (
 
 	"github.com/cherts/anylink/base"
 	"github.com/cherts/anylink/dbdata"
+	"github.com/cherts/anylink/pkg/utils"
 	mapset "github.com/deckarep/golang-set"
 )
 
@@ -91,10 +91,6 @@ type Session struct {
 	CSess *ConnSession
 }
 
-func init() {
-	rand.Seed(time.Now().UnixNano())
-}
-
 func checkSession() {
 	// Detect expired sessions
 	go func() {
@@ -144,28 +140,15 @@ func CloseUserLimittimeSession() {
 	}
 }
 
-func GenToken() string {
-	// Generate 32-bit token
-	bToken := make([]byte, 32)
-	rand.Read(bToken)
-	return fmt.Sprintf("%x", bToken)
-}
-
 func NewSession(token string) *Session {
 	if token == "" {
-		btoken := make([]byte, 32)
-		rand.Read(btoken)
-		token = fmt.Sprintf("%x", btoken)
+		token = utils.RandomHex(32)
 	}
-
-	// generate dtlsn session_id
-	dtlsid := make([]byte, 32)
-	rand.Read(dtlsid)
 
 	sess := &Session{
 		Sid:       fmt.Sprintf("%d", time.Now().Unix()),
 		Token:     token,
-		DtlsSid:   fmt.Sprintf("%x", dtlsid),
+		DtlsSid:   utils.RandomHex(32),
 		LastLogin: time.Now(),
 	}
 

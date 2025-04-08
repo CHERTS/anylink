@@ -86,9 +86,9 @@ func LinkTunnel(w http.ResponseWriter, r *http.Request) {
 	}
 	cSess.CstpDpd = cstpDpd
 
-	dtlsPort := "4433"
-	if strings.Contains(base.Cfg.ServerDTLSAddr, ":") {
-		ss := strings.Split(base.Cfg.ServerDTLSAddr, ":")
+	dtlsPort := "443"
+	if strings.Contains(base.Cfg.AdvertiseDTLSAddr, ":") {
+		ss := strings.Split(base.Cfg.AdvertiseDTLSAddr, ":")
 		dtlsPort = ss[1]
 	}
 
@@ -131,9 +131,13 @@ func LinkTunnel(w http.ResponseWriter, r *http.Request) {
 	for _, v := range cSess.Group.ClientDns {
 		HttpAddHeader(w, "X-CSTP-DNS", v.Val)
 	}
+	// Split DNS
+	for _, v := range cSess.Group.SplitDns {
+		HttpAddHeader(w, "X-CSTP-Split-DNS", v.Val)
+	}
 	// Allowed routes
 	for _, v := range cSess.Group.RouteInclude {
-		if strings.ToLower(v.Val) == dbdata.All {
+		if strings.ToLower(v.Val) == dbdata.ALL {
 			continue
 		}
 		HttpAddHeader(w, "X-CSTP-Split-Include", v.IpMask)
@@ -156,9 +160,9 @@ func LinkTunnel(w http.ResponseWriter, r *http.Request) {
 	HttpSetHeader(w, "X-CSTP-Keep", "true")
 	HttpSetHeader(w, "X-CSTP-Tunnel-All-DNS", "false")
 
-	HttpSetHeader(w, "X-CSTP-Rekey-Time", "43200") // 172800
+	HttpSetHeader(w, "X-CSTP-Rekey-Time", "86400") // 172800
 	HttpSetHeader(w, "X-CSTP-Rekey-Method", "new-tunnel")
-	HttpSetHeader(w, "X-DTLS-Rekey-Time", "43200")
+	HttpSetHeader(w, "X-DTLS-Rekey-Time", "86400")
 	HttpSetHeader(w, "X-DTLS-Rekey-Method", "new-tunnel")
 
 	HttpSetHeader(w, "X-CSTP-DPD", fmt.Sprintf("%d", cstpDpd))
@@ -180,7 +184,7 @@ func LinkTunnel(w http.ResponseWriter, r *http.Request) {
 	HttpSetHeader(w, "X-CSTP-Routing-Filtering-Ignore", "false")
 	HttpSetHeader(w, "X-CSTP-Quarantine", "false")
 	HttpSetHeader(w, "X-CSTP-Disable-Always-On-VPN", "false")
-	HttpSetHeader(w, "X-CSTP-Client-Bypass-Protocol", "false")
+	HttpSetHeader(w, "X-CSTP-Client-Bypass-Protocol", "true")
 	HttpSetHeader(w, "X-CSTP-TCP-Keepalive", "false")
 	// Set up domain name split tunneling (not supported on mobile devices)
 	if mobile != "mobile" {

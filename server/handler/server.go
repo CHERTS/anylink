@@ -1,13 +1,16 @@
 package handler
 
 import (
+	"crypto/sha1"
 	"crypto/tls"
+	"encoding/hex"
 	"fmt"
 	"io"
 	"net"
 	"net/http"
 	"net/http/httputil"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/cherts/anylink/base"
@@ -35,6 +38,19 @@ func startTls() {
 	//	// Use custom certificate
 	//	certs[0], err = tls.LoadX509KeyPair(certFile, keyFile)
 	// }
+
+	tlscert, _, err := dbdata.ParseCert()
+	if err != nil {
+		base.Fatal("Certificate loading failed", err)
+	}
+	dbdata.LoadCertificate(tlscert)
+
+	// Calculate the certificate hash value
+	s1 := sha1.New()
+	s1.Write(tlscert.Certificate[0])
+	h2s := hex.EncodeToString(s1.Sum(nil))
+	certHash = strings.ToUpper(h2s)
+	base.Info("certHash", certHash)
 
 	// repair CVE-2016-2183
 	// https://segmentfault.com/a/1190000038486901
@@ -96,8 +112,11 @@ func initRoute() http.Handler {
 
 	r.HandleFunc("/", LinkHome).Methods(http.MethodGet)
 	r.HandleFunc("/", LinkAuth).Methods(http.MethodPost)
+	// r.Handle("/", antiBruteForce(http.HandlerFunc(LinkAuth))).Methods(http.MethodPost)
 	r.HandleFunc("/CSCOSSLC/tunnel", LinkTunnel).Methods(http.MethodConnect)
 	r.HandleFunc("/otp_qr", LinkOtpQr).Methods(http.MethodGet)
+	r.HandleFunc("/otp-verification", LinkAuth_otp).Methods(http.MethodPost)
+	// r.Handle("/otp-verification", antiBruteForce(http.HandlerFunc(LinkAuth_otp))).Methods(http.MethodPost)
 	r.HandleFunc(fmt.Sprintf("/profile_%s.xml", base.Cfg.ProfileName), func(w http.ResponseWriter, r *http.Request) {
 		b, _ := os.ReadFile(base.Cfg.Profile)
 		w.Write(b)

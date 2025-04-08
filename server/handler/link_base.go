@@ -17,6 +17,8 @@ type ClientRequest struct {
 	Version              string         `xml:"version"`                     // Client version number
 	GroupAccess          string         `xml:"group-access"`                // Requested address
 	GroupSelect          string         `xml:"group-select"`                // Selected group name
+	RemoteAddr           string         `xml:"remote_addr"`
+	UserAgent            string         `xml:"user_agent"`
 	SessionId            string         `xml:"session-id"`
 	SessionToken         string         `xml:"session-token"`
 	Auth                 auth           `xml:"auth"`
@@ -27,6 +29,7 @@ type ClientRequest struct {
 type auth struct {
 	Username          string `xml:"username"`
 	Password          string `xml:"password"`
+	OtpSecret         string `xml:"otp_secret"`
 	SecondaryPassword string `xml:"secondary_password"`
 }
 

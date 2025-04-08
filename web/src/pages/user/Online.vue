@@ -86,6 +86,7 @@
             label="Unique MAC">
             <template slot-scope="scope">
                 <el-tag v-if="scope.row.unique_mac" type="success">Yes</el-tag>
+                <el-tag v-else type="info">No</el-tag>
             </template>
         </el-table-column>
 
@@ -99,7 +100,10 @@
             prop="remote_addr"
             label="Remote address">
         </el-table-column>
-
+        <el-table-column
+            prop="transport_protocol"
+            label="Transport protocol">
+        </el-table-column>
         <el-table-column
             prop="tun_name"
             label="TUN name">
