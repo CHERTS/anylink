@@ -3,7 +3,7 @@ package dbdata
 import (
 	"testing"
 
-	"github.com/bjdgyc/anylink/base"
+	"github.com/cherts/anylink/base"
 	"github.com/stretchr/testify/assert"
 )
 
