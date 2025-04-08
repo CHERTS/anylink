@@ -16,8 +16,6 @@ var (
 	// ipKeep and ipLease  ipAddr => macAddr
 	// ipKeep    = map[string]string{}
 	ipPoolMux sync.Mutex
-	// Record loop points
-	loopCurIp uint32
 )
 
 type ipPoolConfig struct {
