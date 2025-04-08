@@ -262,7 +262,7 @@ func SetGroup(g *Group) error {
 			splitDns = append(splitDns, v)
 		}
 	}
-	g.SplitDns = splitDn
+	g.SplitDns = splitDns
 
 	// Domain name split tunneling, cannot be filled in at the same time
 	g.DsIncludeDomains = strings.TrimSpace(g.DsIncludeDomains)
