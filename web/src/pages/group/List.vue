@@ -660,7 +660,7 @@ export default {
         //console.log(rdata);
       }).catch(error => {
         this.$message.error('Oh, request error');
-        //console.log(error);
+        console.log(error);
       });
     },
     handleEdit(row) {
@@ -681,7 +681,7 @@ export default {
         this.setAuthData(resp.data.data);
       }).catch(error => {
         this.$message.error('Oh, request error');
-        //console.log(error);
+        console.log(error);
       });
     },
     pageChange(p) {
@@ -700,7 +700,7 @@ export default {
         this.count = rdata.count
       }).catch(error => {
         this.$message.error('Oh, request error');
-        //console.log(error);
+        console.log(error);
       });
     },
     removeDomain(arr, index) {
@@ -737,7 +737,7 @@ export default {
           //console.log(rdata);
         }).catch(error => {
           this.$message.error('Oh, request error');
-          //console.log(error);
+          console.log(error);
         });
       });
     },
@@ -763,7 +763,7 @@ export default {
           //console.log(rdata);
         }).catch(error => {
           this.$message.error('Oh, request error');
-          //console.log(error);
+          console.log(error);
           this.authLoginLoading = false;
         });
       });
