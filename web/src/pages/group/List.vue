@@ -469,7 +469,7 @@
             <templete v-if="activeTab == 'authtype' && ruleForm.auth.type != 'local'">
               <el-button @click="openAuthLoginDialog()" style="margin-right:10px">Test Login</el-button>
             </templete>
-            <el-button type="primary" @click="submitForm('ruleForm')">Keep</el-button>
+            <el-button type="primary" @click="submitForm('ruleForm')">Save</el-button>
             <el-button @click="closeDialog">Cancel</el-button>
           </el-form-item>
         </el-tabs>

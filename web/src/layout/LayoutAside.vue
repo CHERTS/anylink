@@ -36,7 +36,7 @@
       <el-menu-item index="/admin/user/list">Users</el-menu-item>
       <el-menu-item index="/admin/user/policy">Policy</el-menu-item>
       <el-menu-item index="/admin/user/online">Online</el-menu-item>
-      <el-menu-item index="/admin/user/lockmanager">Lock Management</el-menu-item>
+      <el-menu-item index="/admin/user/lockmanager">Lock management</el-menu-item>
       <el-menu-item index="/admin/user/ip_map">IP mapping</el-menu-item>
     </el-submenu>
 
