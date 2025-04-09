@@ -110,6 +110,7 @@ func UploadUser(file string) error {
 		if err := dbdata.AddBatch(user); err != nil {
 			return fmt.Errorf("Please check whether the data in row %d contains duplicate users.", index)
 		}
+		user.PinCode = row[4]
 		if user.SendEmail {
 			if err := userAccountMail(user); err != nil {
 				return err

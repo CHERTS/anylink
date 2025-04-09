@@ -1,6 +1,7 @@
 package dbdata
 
 import (
+	"net"
 	"net/url"
 	"regexp"
 	"strings"
@@ -77,7 +78,8 @@ func (ua *UserActLogProcess) Add(u UserActLog, userAgent string) {
 	u.Os = os_idx
 	u.Client = client_idx
 	u.Version = ver
-	u.RemoteAddr = strings.Split(u.RemoteAddr, ":")[0]
+	// u.RemoteAddr = strings.Split(u.RemoteAddr, ":")[0]
+	u.RemoteAddr, _, _ = net.SplitHostPort(u.RemoteAddr)
 	// remove extra characters
 	infoSlice := strings.Split(u.Info, " ")
 	infoLen := len(infoSlice)

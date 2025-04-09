@@ -30,7 +30,9 @@ LABEL maintainer="github.com/cherts"
 ARG CN="no"
 
 ENV TZ=Europe/Moscow
-ENV ANYLINK_IN_CONTAINER=true
+# Switch variable on off
+ENV ANYLINK_IN_CONTAINER="on"
+ENV IPTABLES_LEGACY="off"
 
 WORKDIR /app
 COPY docker/init_release.sh /tmp/

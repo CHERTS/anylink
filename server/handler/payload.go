@@ -86,14 +86,41 @@ func checkLinkAcl(group *dbdata.Group, pl *sessdata.Payload) bool {
 	}
 
 	for _, v := range group.LinkAcl {
-		// Loop to determine IP and port
-		if v.IpNet.Contains(ipDst) {
-			// 放行允许ip的ping
-			if v.Port == ipPort || v.Port == 0 || ipProto == waterutil.ICMP {
-				if v.Action == dbdata.Allow {
-					return true
-				} else {
-					return false
+		// Allow ping of allowed IP addresses
+		// if v.Ports == nil || len(v.Ports) == 0 {
+		// 	//Single port historical data compatible
+		// 	port := uint16(v.Port.(float64))
+		// 	if port == ipPort || port == 0 || ipProto == waterutil.ICMP {
+		// 		if v.Action == dbdata.Allow {
+		// 			return true
+		// 		} else {
+		// 			return false
+		// 		}
+		// 	}
+		// } else {
+
+		// First determine the agreement
+		// Compatible with old data v.Protocol == ""
+		if v.Protocol == "" || v.Protocol == dbdata.ALL || v.IpProto == ipProto {
+			// 循环判断ip和端口
+			if v.IpNet.Contains(ipDst) {
+				// icmp 不判断端口
+				if ipProto == waterutil.ICMP {
+					if v.Action == dbdata.Allow {
+						return true
+					} else {
+						return false
+					}
+				}
+
+				if dbdata.ContainsInPorts(v.Ports, ipPort) || dbdata.ContainsInPorts(v.Ports, 0) {
+					if v.Action == dbdata.Allow {
+						// log.Println(dbdata.Allow, v.Ports)
+						return true
+					} else {
+						// log.Println(dbdata.Deny, v.Ports)
+						return false
+					}
 				}
 			}
 		}

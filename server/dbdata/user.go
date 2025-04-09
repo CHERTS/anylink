@@ -6,6 +6,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/cherts/anylink/base"
 	"github.com/cherts/anylink/pkg/utils"
 	"github.com/xlzd/gotp"
 )
@@ -67,7 +68,9 @@ func SetUser(v *User) error {
 }
 
 // Verify user login information
-func CheckUser(name, pwd, group string) error {
+func CheckUser(name, pwd, group string, ext map[string]interface{}) error {
+	base.Trace("CheckUser", name, pwd, group, ext)
+
 	// Get logged in group data
 	groupData := &Group{}
 	err := One("Name", group, groupData)
@@ -81,7 +84,7 @@ func CheckUser(name, pwd, group string) error {
 	authType := groupData.Auth["type"].(string)
 	// Local authentication method
 	if authType == "local" {
-		return checkLocalUser(name, pwd, group)
+		return checkLocalUser(name, pwd, group, ext)
 	}
 	// Other authentication methods, support customization
 	_, ok := authRegistry[authType]
@@ -89,11 +92,11 @@ func CheckUser(name, pwd, group string) error {
 		return fmt.Errorf("%s %s", "Unknown authentication method: ", authType)
 	}
 	auth := makeInstance(authType).(IUserAuth)
-	return auth.checkUser(name, pwd, groupData)
+	return auth.checkUser(name, pwd, groupData, ext)
 }
 
 // Verify local user login information
-func checkLocalUser(name, pwd, group string) error {
+func checkLocalUser(name, pwd, group string, ext map[string]interface{}) error {
 	// TODO Serious Problem
 	// return nil
 
@@ -115,19 +118,31 @@ func checkLocalUser(name, pwd, group string) error {
 	if !utils.InArrStr(v.Groups, group) {
 		return fmt.Errorf("%s %s", name, "User group error")
 	}
+
 	// Determine otp information
 	pinCode := pwd
-	if !v.DisableOtp {
-		pinCode = pwd[:pl-6]
-		otp := pwd[pl-6:]
-		if !checkOtp(name, otp, v.OtpSecret) {
-			return fmt.Errorf("%s %s", name, "Dynamic code error")
+	if !base.Cfg.AuthAloneOtp {
+		// Determine otp information
+		if !v.DisableOtp {
+			pinCode = pwd[:pl-6]
+			otp := pwd[pl-6:]
+			if !CheckOtp(name, otp, v.OtpSecret) {
+				return fmt.Errorf("%s %s", name, "Dynamic code error")
+			}
 		}
 	}
 
 	// Determine user password
-	if pinCode != v.PinCode {
-		return fmt.Errorf("%s %s", name, "wrong password")
+	// Compatible with plain text passwords
+	if len(v.PinCode) != 60 {
+		if pinCode != v.PinCode {
+			return fmt.Errorf("%s %s", name, "Wrong password")
+		}
+		return nil
+	}
+	// Ciphertext password
+	if !utils.PasswordVerify(pinCode, v.PinCode) {
+		return fmt.Errorf("%s %s", name, "Wrong password")
 	}
 
 	return nil
@@ -171,7 +186,7 @@ func init() {
 }
 
 // Determine token information
-func checkOtp(name, otp, secret string) bool {
+func CheckOtp(name, otp, secret string) bool {
 	key := fmt.Sprintf("%s:%s", name, otp)
 
 	userOtpMux.Lock()
@@ -189,4 +204,26 @@ func checkOtp(name, otp, secret string) bool {
 	verify := totp.Verify(otp, unix)
 
 	return verify
+}
+
+// Encrypt password before inserting into database
+func (u *User) BeforeInsert() {
+	if base.Cfg.EncryptionPassword {
+		hashedPassword, err := utils.PasswordHash(u.PinCode)
+		if err != nil {
+			base.Error(err)
+		}
+		u.PinCode = hashedPassword
+	}
+}
+
+// Encrypt passwords before updating the database
+func (u *User) BeforeUpdate() {
+	if len(u.PinCode) != 60 && base.Cfg.EncryptionPassword {
+		hashedPassword, err := utils.PasswordHash(u.PinCode)
+		if err != nil {
+			base.Error(err)
+		}
+		u.PinCode = hashedPassword
+	}
 }

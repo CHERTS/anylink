@@ -1,4 +1,4 @@
-// admin:后台管理接口
+// admin: backend management interface
 package admin
 
 import (
@@ -87,6 +87,8 @@ func StartAdmin() {
 	r.HandleFunc("/group/auth_login", GroupAuthLogin)
 
 	r.HandleFunc("/statsinfo/list", StatsInfoList)
+	r.HandleFunc("/locksinfo/list", GetLocksInfo)
+	r.HandleFunc("/locksinfo/unlok", UnlockUser)
 
 	// pprof
 	if base.Cfg.Pprof {
@@ -109,12 +111,6 @@ func StartAdmin() {
 	selectedCipherSuites := make([]uint16, 0, len(cipherSuites))
 	for _, s := range cipherSuites {
 		selectedCipherSuites = append(selectedCipherSuites, s.ID)
-	}
-
-	if tlscert, _, err := dbdata.ParseCert(); err != nil {
-		base.Fatal("Certificate loading failed", err)
-	} else {
-		dbdata.LoadCertificate(tlscert)
 	}
 
 	// Set tls information

@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 var1=$1
 
 #set -x
@@ -19,10 +19,16 @@ case $var1 in
   #iptables -nL -t nat
 
   # Start the service and first determine whether the configuration file exists
-  if [ ! -f /app/conf/profile.xml ]; then
+  if [[ ! -f /app/conf/profile.xml ]]; then
     /bin/cp -r /home/conf-bak/* /app/conf/
     echo "After the configuration file is initialized, the container will be forcibly exited. Restart the container."
     exit 1
+  fi
+
+  # Compatible with old versions of iptables
+  if [[ $IPTABLES_LEGACY == "on" ]]; then
+    rm /sbin/iptables
+    ln -s /sbin/iptables-legacy /sbin/iptables
   fi
 
   exec /app/anylink "$@"

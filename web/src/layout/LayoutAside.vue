@@ -7,17 +7,9 @@
 
   <!--<div class="layout-aside" :style="aside_style">-->
 
-  <el-menu :collapse="!is_active"
-           :default-active="route_path"
-           :style="is_active?'width:200px':''"
-           router
-           class="layout-menu"
-           :collapse-transition="false"
-
-           background-color="#545c64"
-           text-color="#fff"
-           active-text-color="#ffd04b"
-  >
+  <el-menu :collapse="!is_active" :default-active="route_path" :style="is_active ? 'width:200px' : ''" router
+    class="layout-menu" :collapse-transition="false" background-color="#545c64" text-color="#fff"
+    active-text-color="#ffd04b">
     <el-menu-item index="/admin/home">
       <i class="el-icon-s-home"></i>
       <span slot="title">Home</span>
@@ -44,6 +36,7 @@
       <el-menu-item index="/admin/user/list">Users</el-menu-item>
       <el-menu-item index="/admin/user/policy">Policy</el-menu-item>
       <el-menu-item index="/admin/user/online">Online</el-menu-item>
+      <el-menu-item index="/admin/user/lockmanager">Lock management</el-menu-item>
       <el-menu-item index="/admin/user/ip_map">IP mapping</el-menu-item>
     </el-submenu>
 

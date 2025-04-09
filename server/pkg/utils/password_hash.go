@@ -14,6 +14,10 @@ func PasswordHash(password string) (string, error) {
 }
 
 func PasswordVerify(password, hash string) bool {
+	// Keep old user plain text authentication
+	if len(hash) != 60 {
+		return password == hash
+	}
 	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
 	return err == nil
 }

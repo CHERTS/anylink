@@ -278,7 +278,7 @@ export default {
         bandwidth: 0,
         status: 1,
         allow_lan: true,
-        client_dns: [{val: '114.114.114.114'}],
+        client_dns: [{val: '1.1.1.1'}],
         route_include: [{val: 'all', note: 'Default global proxy'}],
         route_exclude: [],
         re_upper_limit : 0,        

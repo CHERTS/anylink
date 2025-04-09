@@ -28,11 +28,11 @@ func LinkHome(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if index.Homecode > 0 {
+	if index.Homecode != http.StatusOK {
 		w.WriteHeader(index.Homecode)
-	} else {
-		w.WriteHeader(http.StatusOK)
+		return
 	}
+	w.WriteHeader(http.StatusOK)
 
 	// if index.Homeindex == "" {
 	// 	index.Homeindex = "AnyLink is an enterprise-level remote office SSL VPN software that can support multiple people online at the same time."

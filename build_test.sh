@@ -43,11 +43,11 @@ EOF
 
 # Compile using musl-dev
 docker run -q --rm -v $PWD/server:/app -v $gopath:/go -w /app --platform=linux/amd64 \
-  golang:1.20-alpine3.19 sh -c "$dockercmd"
+  golang:1.22-alpine3.19 sh -c "$dockercmd"
 
 #arm64 compilation
 #docker run -q --rm -v $PWD/server:/app -v $gopath:/go -w /app --platform=linux/arm64 \
-#  golang:1.20-alpine3.19 go build -o anylink_arm64 $flags -ldflags "$ldflags"
+#  golang:1.22-alpine3.19 go build -o anylink_arm64 $flags -ldflags "$ldflags"
 #exit 0
 
 #cd $cpath

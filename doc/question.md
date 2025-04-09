@@ -109,3 +109,18 @@ Server network card upload speed: 280Mb/s
 ```
 
 > Client TLS encryption protocol and tunnel header will occupy a certain amount of bandwidth
+
+### Login explosion prevention instructions
+
+```
+1. User A attempts to log in on IP 1.2.3.4:
+User A fails to log in 5 times on IP 1.2.3.4, triggering a 5-minute lockout of User A on that IP.
+During these 5 minutes, User A cannot make new login attempts from IP 1.2.3.4.
+2. User A changes IP to 1.2.3.5 and continues to try to log in:
+User A continues to try to log in on IP 1.2.3.5 and fails 20 times in total, triggering a global lockout of User A for 5 minutes.
+During these 5 minutes, User A cannot make new login attempts from any IP address.
+3. Multiple users attempt to log in on IP 1.2.3.4:
+If there are 40 failed login attempts from IP 1.2.3.4 (regardless of how many different users), a global lockout of that IP for 5 minutes is triggered.
+During these 5 minutes, all login attempts from IP 1.2.3.4 will be rejected.
+If there are no new failed attempts within N minutes, the failure count will be reset after N minutes (*_reset_time).
+```

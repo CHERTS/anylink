@@ -10,6 +10,8 @@
 
 AnyLink is an enterprise-level remote office sslvpn software that can support multiple people using it online at the same time.
 
+With AnyLink, you can securely access your internal network anytime and anywhere.
+
 ## Repo
 
 > Github: https://github.com/cherts/anylink
@@ -19,9 +21,9 @@ AnyLink is an enterprise-level remote office sslvpn software that can support mu
 AnyLink is based on [ietf-openconnect](https://tools.ietf.org/html/draft-mavrogiannopoulos-openconnect-02)
 Protocol development, and draws on the development ideas of [ocserv](http://ocserv.gitlab.io/www/index.html) to make it compatible with the AnyConnect client at the same time.
 
-AnyLink uses TLS/DTLS for data encryption, so an RSA or ECC certificate is required. You can apply for a free SSL certificate through Let's Encrypt and TrustAsia.
+AnyLink uses TLS/DTLS for data encryption, so an RSA or ECC certificate is required. A private self-signed certificate can be used. You can apply for a free SSL certificate through Let's Encrypt and TrustAsia.
 
-The AnyLink server is only tested on CentOS 7, CentOS 8, Ubuntu 18.04, Ubuntu 20.04 and Ubuntu 22.04. If it needs to be installed on other systems, the server needs to support the tun/tap function and ip setting command, iptables command.
+The AnyLink server has only been tested on CentOS 7, CentOS 8, Ubuntu 18, Ubuntu 20, Ubuntu 20, and AnolisOS 8. If you need to install it on other systems, the server must support the tun/tap interface, ip and iptables command.
 
 ## Screenshot
 
@@ -35,9 +37,9 @@ The AnyLink server is only tested on CentOS 7, CentOS 8, Ubuntu 18.04, Ubuntu 20
 
 ### Usage issues
 
-> For the test environment, you can use vpn.xxx.com to bind the host for testing
+> For the test environment, you can test directly, and the client needs to uncheck [Block connections to untrusted servers]
 >
-> For online environments, you must apply for a secure https certificate, and private certificate connections are not supported.
+> For online environments, try to apply for a secure https certificate (the same type of pem certificate used by nginx)
 >
 > Server installation yum install iproute or apt-get install iproute2
 >
@@ -45,7 +47,7 @@ The AnyLink server is only tested on CentOS 7, CentOS 8, Ubuntu 18.04, Ubuntu 20
 >
 > Other questions [Go to view](doc/question.md)
 >
-> For first time use, please visit https://domain name:443 in the browser. After the browser prompts that it is safe, enter [domain name: 443] on the client.
+> For first time use, please visit https://domainname:443 in the browser. After the browser prompts that it is safe, enter [domain name: 443] on the client.
 
 ### Compile and install by yourself
 
@@ -97,14 +99,18 @@ sudo ./anylink
 - [x] Backend management interface
 - [x] Access rights management
 - [x] User activity audit function
-- [x] IP access audit function
+- [x] IP access audit function (supports multiple ports, continuous ports)
 - [x] Domain name dynamic split tunnel (domain name routing function)
-- [x] radius authentication support
+- [x] Radius authentication support
 - [x] LDAP authentication support
 - [x] Automatically disconnect when idle link times out
 - [x] Traffic compression function
 - [x] Automatic release of egress IP
 - [x] Support configuration differentiation of multiple services
+- [x] Support private self-signed certificates
+- [x] Support intranet domain name resolution (specified domain names go through intranet dns)
+- [x] Add user verification anti-explosion function (IP BAN)
+- [x] Support docker non-privileged mode
 - [ ] Bridge access mode based on ipvtap device
 
 ## Config
@@ -129,11 +135,12 @@ sudo ./anylink
 >
 > Database table structure is automatically generated, no need to manually import (please grant DDL permission)
 
-| db_type  | db_source                                              |
-|----------|--------------------------------------------------------|
-| sqlite3  | ./conf/anylink.db                                      |
-| mysql    | user:password@tcp(127.0.0.1:3306)/anylink?charset=utf8 |
-| postgres | user:password@localhost/anylink?sslmode=verify-full    |
+| db_type  | db_source                                                                                                            |
+|----------|----------------------------------------------------------------------------------------------------------------------|
+| sqlite3  | ./conf/anylink.db                                                                                                    |
+| mysql    | user:password@tcp(127.0.0.1:3306)/anylink?charset=utf8<br/>user:password@tcp(127.0.0.1:3306)/anylink?charset=utf8mb4 |
+| postgres | postgres://user:password@localhost/anylink?sslmode=verify-full                                                       |
+| mssql    | sqlserver://user:password@localhost?database=anylink&connection+timeout=30                                           |
 
 > Sample configuration file
 >
@@ -292,31 +299,27 @@ ipv4_end = "10.1.2.200"
 ## Systemd
 
 1. Add anylink program
-
     - Copy `anylink-deploy/anylink` binary to `/usr/sbin/anylink`
     - Add execution permissions `chmod +x /usr/sbin/anylink`
 
 2. Added config file
-
     - Create config directory `/etc/anylink`
     - Copy file `anylink-deploy/conf/server-sample.toml` to `/etc/anylink/server.toml`
     - Copy file `anylink-deploy/conf/profile.xml`, `anylink-deploy/conf/vpn_cert.crt`, `anylink-deploy/conf/vpn_cert.key` to `/etc/anylink`
 
 3. Added working file
-
     - Create working directory `/var/lib/anylink` and `/var/lib/anylink/files`
     - Copy file `anylink-deploy/conf/files/index.html`, `anylink-deploy/conf/files/info.txt` to `/var/lib/anylink/files`
 
 4. Copy systemd unit file `anylink-deploy/systemd/anylink.service` to:
-
     - for CentOS: `/usr/lib/systemd/system/`
     - for Ubuntu: `/lib/systemd/system/`
     - and exec: `systemctl daemon-reload`
 
 5. Operation command:
-
-    - Start: `systemctl start anylink`
-    - Stop: `systemctl stop anylink`
+    - Reload systemd configuration: `systemctl daemon-reload`
+    - Start anylink: `systemctl start anylink`
+    - Stop anylink: `systemctl stop anylink`
     - Start automatically at boot: `systemctl enable anylink`
 
 ### Docker Compose
@@ -364,7 +367,17 @@ ipv4_end = "10.1.2.200"
    docker run -it --rm cherts/anylink tool -d
    ```
 
-6. Start container
+6. iptables compatibility settings
+   ```bash
+   # By default, iptables uses nf_tables to set forwarding rules. If the kernel is lower than version 4.19, special configuration is required.
+   docker run -itd --name anylink --privileged \
+      -e IPTABLES_LEGACY=on \
+      -p 443:443 -p 8800:8800 -p 443:443/udp \
+      --restart=always \
+      cherts/anylink
+   ```
+
+7. Start container
 
    ```bash
    # Start by default
@@ -385,7 +398,7 @@ ipv4_end = "10.1.2.200"
    docker restart anylink
    ```
 
-7. Start container with custom parameters
+8. Start container with custom parameters
    ```bash
    # Parameters can refer to ./anylink tool -d
    # You can use command line parameters or environment variables to configure
@@ -398,7 +411,18 @@ ipv4_end = "10.1.2.200"
        --ip_lease=1209600 # IP address lease length
    ```
 
-8. Build the image (optional)
+9. Start the container in non-privileged mode
+   ```bash
+   # For parameters, please refer to ./anylink tool -d
+   # You can use command line parameters or environment variables to configure
+   docker run -itd --name anylink \
+       -p 443:443 -p 8800:8800 -p 443:443/udp \
+       -v /dev/net/tun:/dev/net/tun --cap-add=NET_ADMIN \
+       --restart=always \
+       cherts/anylink
+   ```
+
+10. Build the image (optional)
 
    ```bash
    # Get the warehouse source code

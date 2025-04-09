@@ -26,6 +26,7 @@ var configs = []config{
 	{Typ: cfgStr, Name: "server_addr", Usage: "Server listening address", ValStr: ":443"},
 	{Typ: cfgBool, Name: "server_dtls", Usage: "Enable DTLS", ValBool: false},
 	{Typ: cfgStr, Name: "server_dtls_addr", Usage: "DTLS listening address", ValStr: ":443"},
+	{Typ: cfgStr, Name: "advertise_dtls_addr", Usage: "DTLS external mapping port (same as server_dtls_addr if empty)", ValStr: ""},
 	{Typ: cfgStr, Name: "admin_addr", Usage: "Admin listening address", ValStr: ":8800"},
 	{Typ: cfgBool, Name: "proxy_protocol", Usage: "TCP proxy protocol", ValBool: false},
 	{Typ: cfgStr, Name: "db_type", Usage: "Database type [sqlite3 mysql postgres]", ValStr: "sqlite3"},
@@ -71,6 +72,25 @@ var configs = []config{
 
 	{Typ: cfgBool, Name: "display_error", Usage: "The client displays detailed error information (be careful when opening the online environment)", ValBool: false},
 	{Typ: cfgBool, Name: "exclude_export_ip", Usage: "Exclude export ip routing (export ip is not encrypted for transmission)", ValBool: true},
+	{Typ: cfgBool, Name: "auth_alone_otp", Usage: "Log in to the separate verification OTP window", ValBool: false},
+	{Typ: cfgBool, Name: "encryption_password", Usage: "Whether the user password is encrypted and saved", ValBool: false},
+
+	{Typ: cfgBool, Name: "anti_brute_force", Usage: "Whether to enable the explosion-proof function", ValBool: true},
+	{Typ: cfgStr, Name: "ip_whitelist", Usage: "Global IP whitelist, multiple IP whitelists separated by commas, supports single IP and CIDR range", ValStr: "192.168.90.1,172.16.0.0/24"},
+
+	{Typ: cfgInt, Name: "max_ban_score", Usage: "The maximum number of attempts per unit time. 0 means turning off this function.", ValInt: 5},
+	{Typ: cfgInt, Name: "ban_reset_time", Usage: "Set the unit time (seconds), if exceeded, reset the count", ValInt: 10},
+	{Typ: cfgInt, Name: "lock_time", Usage: "Lockout duration after exceeding the maximum number of attempts (seconds)", ValInt: 300},
+
+	{Typ: cfgInt, Name: "max_global_user_ban_count", Usage: "The maximum number of attempts per unit time for global users. 0 means turning off this function.能", ValInt: 20},
+	{Typ: cfgInt, Name: "global_user_ban_reset_time", Usage: "Global user setting unit time (seconds)", ValInt: 600},
+	{Typ: cfgInt, Name: "global_user_lock_time", Usage: "Global user lockout time (seconds)", ValInt: 300},
+
+	{Typ: cfgInt, Name: "max_global_ip_ban_count", Usage: "The maximum number of attempts per unit time for the global IP address. 0 means this function is disabled.", ValInt: 40},
+	{Typ: cfgInt, Name: "global_ip_ban_reset_time", Usage: "Global IP setting unit time (seconds)", ValInt: 1200},
+	{Typ: cfgInt, Name: "global_ip_lock_time", Usage: "Global IP lock time (seconds)", ValInt: 300},
+
+	{Typ: cfgInt, Name: "global_lock_state_expiration_time", Usage: "The global lock state preservation life cycle (seconds), if it exceeds, the record will be deleted", ValInt: 3600},
 }
 
 var envs = map[string]string{}

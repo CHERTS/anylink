@@ -15,6 +15,7 @@ import (
 
 	"github.com/cherts/anylink/base"
 	"github.com/cherts/anylink/dbdata"
+	"github.com/cherts/anylink/pkg/utils"
 	"github.com/cherts/anylink/sessdata"
 	"github.com/skip2/go-qrcode"
 	mail "github.com/xhit/go-simple-mail/v2"
@@ -98,11 +99,17 @@ func UserSet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if len(data.PinCode) < 6 {
+		data.PinCode = utils.RandomRunes(8)
+		base.Info("User: ", data.Username, "Random password is: ", data.PinCode)
+	}
+	plainpwd := data.PinCode
 	err = dbdata.SetUser(data)
 	if err != nil {
 		RespError(w, RespInternalErr, err)
 		return
 	}
+	data.PinCode = plainpwd
 
 	// send email
 	if data.SendEmail {
@@ -180,7 +187,15 @@ func userOtpQr(uid int, b64 bool) (string, error) {
 
 // online user
 func UserOnline(w http.ResponseWriter, r *http.Request) {
-	datas := sessdata.OnlineSess()
+	_ = r.ParseForm()
+	search_cate := r.FormValue("search_cate")
+	search_text := r.FormValue("search_text")
+	show_sleeper := r.FormValue("show_sleeper")
+	showSleeper, _ := strconv.ParseBool(show_sleeper)
+	// one_offline := r.FormValue("one_offline")
+
+	// datas := sessdata.OnlineSess()
+	datas := sessdata.GetOnlineSess(search_cate, search_text, showSleeper)
 
 	data := map[string]interface{}{
 		"count":     len(datas),
@@ -212,8 +227,10 @@ type userAccountMailData struct {
 	Username     string
 	Nickname     string
 	PinCode      string
+	LimitTime    string
 	OtpImg       string
 	OtpImgBase64 string
+	DisableOtp   bool
 }
 
 func userAccountMail(user *dbdata.User) error {
@@ -265,7 +282,15 @@ func userAccountMail(user *dbdata.User) error {
 		PinCode:      user.PinCode,
 		OtpImg:       fmt.Sprintf("https://%s/otp_qr?id=%d&jwt=%s", setting.LinkAddr, user.Id, tokenString),
 		OtpImgBase64: "data:image/png;base64," + otpData,
+		DisableOtp:   user.DisableOtp,
 	}
+
+	if user.LimitTime == nil {
+		data.LimitTime = "No restrictions"
+	} else {
+		data.LimitTime = user.LimitTime.Local().Format("2006-01-02")
+	}
+
 	w := bytes.NewBufferString("")
 	t, _ := template.New("auth_complete").Parse(htmlBody)
 	err = t.Execute(w, data)
@@ -273,12 +298,18 @@ func userAccountMail(user *dbdata.User) error {
 		return err
 	}
 	// fmt.Println(w.String())
-	imgData, _ := userOtpQr(user.Id, false)
-	attach := &mail.File{
-		MimeType: "image/png",
-		Name:     "userOtpQr.png",
-		Data:     []byte(imgData),
-		Inline:   true,
+
+	var attach *mail.File
+	if user.DisableOtp {
+		attach = nil
+	} else {
+		imgData, _ := userOtpQr(user.Id, false)
+		attach = &mail.File{
+			MimeType: "image/png",
+			Name:     "userOtpQr.png",
+			Data:     []byte(imgData),
+			Inline:   true,
+		}
 	}
 
 	return SendMail(base.Cfg.Issuer, user.Email, w.String(), attach)

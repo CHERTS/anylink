@@ -3,6 +3,7 @@ package handler
 import (
 	"crypto/sha1"
 	"encoding/hex"
+	"log"
 	"os"
 
 	"github.com/cherts/anylink/admin"
@@ -10,6 +11,7 @@ import (
 	"github.com/cherts/anylink/cron"
 	"github.com/cherts/anylink/dbdata"
 	"github.com/cherts/anylink/sessdata"
+	gosysctl "github.com/lorenzosaino/go-sysctl"
 )
 
 func Start() {
@@ -17,11 +19,20 @@ func Start() {
 	sessdata.Start()
 	cron.Start()
 
+	admin.InitLockManager() // Initialize the anti-explosion timer and IP whitelist
+
 	// Enable server forwarding
-	err := execCmd([]string{"sysctl -w net.ipv4.ip_forward=1"})
+	err := gosysctl.Set("net.ipv4.ip_forward", "1")
 	if err != nil {
-		base.Fatal(err)
+		base.Warn(err)
 	}
+
+	val, err := gosysctl.Get("net.ipv4.ip_forward")
+	if val != "1" {
+		log.Fatal("Please exec 'sysctl -w net.ipv4.ip_forward=1' ")
+	}
+	// os.Exit(0)
+	// execCmd([]string{"sysctl -w net.ipv4.ip_forward=1"})
 
 	switch base.Cfg.LinkMode {
 	case base.LinkModeTUN:

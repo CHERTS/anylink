@@ -5,10 +5,12 @@ import (
 	"fmt"
 	"net"
 	"regexp"
+	"strconv"
 	"strings"
 	"time"
 
 	"github.com/cherts/anylink/base"
+	"github.com/songgao/water/waterutil"
 	"golang.org/x/text/language"
 	"golang.org/x/text/message"
 )
@@ -16,7 +18,10 @@ import (
 const (
 	Allow = "allow"
 	Deny  = "deny"
-	All   = "all"
+	ALL   = "all"
+	TCP   = "tcp"
+	UDP   = "udp"
+	ICMP  = "icmp"
 )
 
 // The maximum number of characters for domain name diversion is 20,000
@@ -24,11 +29,14 @@ const DsMaxLen = 20000
 
 type GroupLinkAcl struct {
 	// Top-down matching default allow * *
-	Action string     `json:"action"` // allow、deny
-	Val    string     `json:"val"`
-	Port   uint16     `json:"port"`
-	IpNet  *net.IPNet `json:"ip_net"`
-	Note   string     `json:"note"`
+	Action   string               `json:"action"`      // allow、deny
+	Protocol string               `json:"protocol"`    // Support ALL, TCP, UDP, ICMP protocols
+	IpProto  waterutil.IPProtocol `json:"ip_protocol"` // Determine the use of the protocol
+	Val      string               `json:"val"`
+	Port     string               `json:"port"` // Compatible with single port history data type uint16
+	Ports    map[uint16]int8      `json:"ports"`
+	IpNet    *net.IPNet           `json:"ip_net"`
+	Note     string               `json:"note"`
 }
 
 type ValData struct {
@@ -112,7 +120,7 @@ func SetGroup(g *Group) error {
 	routeInclude := []ValData{}
 	for _, v := range g.RouteInclude {
 		if v.Val != "" {
-			if v.Val == All {
+			if v.Val == ALL {
 				routeInclude = append(routeInclude, v)
 				continue
 			}
@@ -161,14 +169,73 @@ func SetGroup(g *Group) error {
 				return errors.New("GroupLinkAcl mistake" + err.Error())
 			}
 			v.IpNet = ipNet
-			linkAcl = append(linkAcl, v)
+
+			// Setting protocol data
+			switch v.Protocol {
+			case TCP:
+				v.IpProto = waterutil.TCP
+			case UDP:
+				v.IpProto = waterutil.UDP
+			case ICMP:
+				v.IpProto = waterutil.ICMP
+			default:
+				// Other types are all
+				v.Protocol = ALL
+			}
+
+			portsStr := v.Port
+			v.Port = strings.TrimSpace(portsStr)
+			// switch vp := v.Port.(type) {
+			// case float64:
+			// 	portsStr = strconv.Itoa(int(vp))
+			// case string:
+			// 	portsStr = vp
+			// }
+
+			if regexp.MustCompile(`^\d{1,5}(-\d{1,5})?(,\d{1,5}(-\d{1,5})?)*$`).MatchString(portsStr) {
+				ports := map[uint16]int8{}
+				for _, p := range strings.Split(portsStr, ",") {
+					if p == "" {
+						continue
+					}
+					if regexp.MustCompile(`^\d{1,5}-\d{1,5}$`).MatchString(p) {
+						rp := strings.Split(p, "-")
+						// portfrom, err := strconv.Atoi(rp[0])
+						portfrom, err := strconv.ParseUint(rp[0], 10, 16)
+						if err != nil {
+							return errors.New("Port: " + rp[0] + " Format error, " + err.Error())
+						}
+						// portto, err := strconv.Atoi(rp[1])
+						portto, err := strconv.ParseUint(rp[1], 10, 16)
+						if err != nil {
+							return errors.New("Port: " + rp[1] + " Format error, " + err.Error())
+						}
+						for i := portfrom; i <= portto; i++ {
+							ports[uint16(i)] = 1
+						}
+
+					} else {
+						port, err := strconv.ParseUint(p, 10, 16)
+						if err != nil {
+							return errors.New("Port: " + p + " Format error, " + err.Error())
+						}
+						ports[uint16(port)] = 1
+					}
+				}
+				v.Ports = ports
+				linkAcl = append(linkAcl, v)
+			} else {
+				return errors.New("Port: " + portsStr + " The format is wrong. Please use commas to separate the ports, for example: 22,80,443. Use - for consecutive ports, for example: 1234-5678")
+			}
 		}
 	}
+
 	g.LinkAcl = linkAcl
 
 	// DNS judgment
 	clientDns := []ValData{}
 	for _, v := range g.ClientDns {
+		v.Val = strings.TrimSpace(v.Val)
 		if v.Val != "" {
 			ip := net.ParseIP(v.Val)
 			if ip.String() != v.Val {
@@ -183,6 +250,20 @@ func SetGroup(g *Group) error {
 		return errors.New("Default route, a DNS must be set")
 	}
 	g.ClientDns = clientDns
+
+	splitDns := []ValData{}
+	for _, v := range g.SplitDns {
+		v.Val = strings.TrimSpace(v.Val)
+		if v.Val != "" {
+			ValidateDomainName(v.Val)
+			if !ValidateDomainName(v.Val) {
+				return errors.New("Domain name error")
+			}
+			splitDns = append(splitDns, v)
+		}
+	}
+	g.SplitDns = splitDns
+
 	// Domain name split tunneling, cannot be filled in at the same time
 	g.DsIncludeDomains = strings.TrimSpace(g.DsIncludeDomains)
 	g.DsExcludeDomains = strings.TrimSpace(g.DsExcludeDomains)
@@ -238,6 +319,15 @@ func SetGroup(g *Group) error {
 	return err
 }
 
+func ContainsInPorts(ports map[uint16]int8, port uint16) bool {
+	_, ok := ports[port]
+	if ok {
+		return true
+	} else {
+		return false
+	}
+}
+
 func GroupAuthLogin(name, pwd string, authData map[string]interface{}) error {
 	g := &Group{Auth: authData}
 	authType := g.Auth["type"].(string)
@@ -249,7 +339,8 @@ func GroupAuthLogin(name, pwd string, authData map[string]interface{}) error {
 	if err != nil {
 		return err
 	}
-	err = auth.checkUser(name, pwd, g)
+	ext := map[string]interface{}{}
+	err = auth.checkUser(name, pwd, g, ext)
 	return err
 }
 

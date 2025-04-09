@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/cherts/anylink/base"
+	_ "github.com/denisenkom/go-mssqldb"
 	_ "github.com/go-sql-driver/mysql"
 	_ "github.com/lib/pq"
 	_ "github.com/mattn/go-sqlite3"
@@ -22,12 +23,13 @@ func GetXdb() *xorm.Engine {
 func initDb() {
 	var err error
 	xdb, err = xorm.NewEngine(base.Cfg.DbType, base.Cfg.DbSource)
-	// Initialize xorm time zone
-	xdb.DatabaseTZ = time.Local
-	xdb.TZLocation = time.Local
 	if err != nil {
 		base.Fatal(err)
 	}
+
+	// Initialize xorm time zone
+	xdb.DatabaseTZ = time.Local
+	xdb.TZLocation = time.Local
 
 	if base.Cfg.ShowSQL {
 		xdb.ShowSQL(true)
@@ -146,8 +148,8 @@ func addInitData() error {
 	g1 := Group{
 		Name:         "all",
 		AllowLan:     true,
-		ClientDns:    []ValData{{Val: "114.114.114.114"}},
-		RouteInclude: []ValData{{Val: All}},
+		ClientDns:    []ValData{{Val: "1.1.1.1"}},
+		RouteInclude: []ValData{{Val: ALL}},
 		Status:       1,
 	}
 	err = SetGroup(&g1)
@@ -158,7 +160,7 @@ func addInitData() error {
 	g2 := Group{
 		Name:         "ops",
 		AllowLan:     true,
-		ClientDns:    []ValData{{Val: "114.114.114.114"}},
+		ClientDns:    []ValData{{Val: "1.1.1.1"}},
 		RouteInclude: []ValData{{Val: "10.0.0.0/8"}},
 		Status:       1,
 	}
@@ -174,6 +176,9 @@ func CheckErrNotFound(err error) bool {
 	return err == ErrNotFound
 }
 
+// base64 images
+// User dynamic code (please keep it safe):<br/>
+// <img src="{{.OtpImgBase64}}"/><br/>
 const accountMail = `<p>Hello, {{.Issuer}}:</p>
 <p>&nbsp;&nbsp;Your account has been created and activated.</p>
 <p>
@@ -181,12 +186,14 @@ const accountMail = `<p>Hello, {{.Issuer}}:</p>
     User group: <b>{{.Group}}</b> <br/>
     Username: <b>{{.Username}}</b> <br/>
     PIN code: <b>{{.PinCode}}</b> <br/>
+    User expiration time: <b>{{.LimitTime}}</b> <br/>
+    {{if .DisableOtp}}
+    <!-- nothing -->
+    {{else}}
+	
     <!-- 
     User dynamic code (expires after 3 days):<br/>
     <img src="{{.OtpImg}}"/><br/>
-    User dynamic code (please keep it properly):<br/>
-    <img src="{{.OtpImgBase64}}"/><br/>
-    The following is the way to write it that is compatible with gmail
     -->
     User OTP code (please save it):<br/>
     <img src="cid:userOtpQr.png" alt="userOtpQr" /><br/>
@@ -196,7 +203,8 @@ const accountMail = `<p>Hello, {{.Issuer}}:</p>
     <ul>
         <li>Please use OTP software to scan the dynamic code QR code</li>
         <li>Then use anyconnect client to log in</li>
-        <li>The login password is [PIN code + dynamic code] (there is no + sign in the middle)</li>
+        <li>Login password is PIN code</li>
+		<li>The OTP password is a dynamic code generated after scanning the code</li>
     </ul>
 </div>
 <p>

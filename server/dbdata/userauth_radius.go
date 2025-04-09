@@ -5,9 +5,11 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"net"
 	"reflect"
 	"time"
 
+	"github.com/cherts/anylink/base"
 	"layeh.com/radius"
 	"layeh.com/radius/rfc2865"
 )
@@ -15,6 +17,7 @@ import (
 type AuthRadius struct {
 	Addr   string `json:"addr"`
 	Secret string `json:"secret"`
+	Nasip  string `json:"nasip"`
 }
 
 func init() {
@@ -38,7 +41,7 @@ func (auth AuthRadius) checkData(authData map[string]interface{}) error {
 	return nil
 }
 
-func (auth AuthRadius) checkUser(name, pwd string, g *Group) error {
+func (auth AuthRadius) checkUser(name, pwd string, g *Group, ext map[string]interface{}) error {
 	pl := len(pwd)
 	if name == "" || pl < 1 {
 		return fmt.Errorf("%s %s", name, "wrong password")
@@ -57,13 +60,34 @@ func (auth AuthRadius) checkUser(name, pwd string, g *Group) error {
 	}
 	// During Radius authentication, set the timeout to 3 seconds.
 	packet := radius.New(radius.CodeAccessRequest, []byte(auth.Secret))
-	rfc2865.UserName_SetString(packet, name)
-	rfc2865.UserPassword_SetString(packet, pwd)
+	err = rfc2865.UserName_SetString(packet, name)
+	if err != nil {
+		return fmt.Errorf("%s %s", name, "Radius set name an error occurred")
+	}
+	err = rfc2865.UserPassword_SetString(packet, pwd)
+	if err != nil {
+		return fmt.Errorf("%s %s", name, "Radius set pwd an error occurred")
+	}
+	if auth.Nasip != "" {
+		nasip := net.ParseIP(auth.Nasip)
+		err = rfc2865.NASIPAddress_Set(packet, nasip)
+		if err != nil {
+			return fmt.Errorf("%s %s", name, "Radius set nasip an error occurred")
+		}
+	}
+	macAddr := ext["mac_addr"].(string)
+	base.Trace("AuthRadius", ext, macAddr)
+	if macAddr != "" {
+		err = rfc2865.CallingStationID_AddString(packet, macAddr)
+		if err != nil {
+			return fmt.Errorf("%s %s", name, "Radius set CallingStationID an error occurred")
+		}
+	}
 	ctx, done := context.WithTimeout(context.Background(), 3*time.Second)
 	defer done()
 	response, err := radius.Exchange(ctx, packet, auth.Addr)
 	if err != nil {
-		return fmt.Errorf("%s %s", name, "Radius server connection abnormality, please check the server and port")
+		return fmt.Errorf("%s %s %s", name, "Radius server connection abnormality, please check the server and port", err)
 	}
 	if response.Code != radius.CodeAccessAccept {
 		return fmt.Errorf("%s %s", name, "Radius: Wrong username or password")
