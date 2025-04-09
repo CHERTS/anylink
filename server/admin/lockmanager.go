@@ -88,7 +88,7 @@ func UnlockUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if lockinfo.State == nil {
-		RespError(w, RespInternalErr, "Locked user not found！")
+		RespError(w, RespInternalErr, "Locked user not found!")
 		return
 	}
 	lm := GetLockManager()
@@ -115,9 +115,9 @@ func UnlockUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	lm.Unlock(state)
-	base.Info("Unlock successfully: ", lockinfo.Description, lockinfo.Username, lockinfo.IP)
+	base.Info("Unlock successfully:", lockinfo.Description, lockinfo.Username, lockinfo.IP)
 
-	RespSucess(w, "Unlocked successfully! ")
+	RespSucess(w, "Unlocked successfully!")
 }
 
 func (lm *LockManager) GetLocksInfo() []LockInfo {
