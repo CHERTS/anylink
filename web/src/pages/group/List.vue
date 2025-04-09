@@ -53,7 +53,7 @@
             <el-row v-if="scope.row.bandwidth > 0">{{ convertBandwidth(scope.row.bandwidth, 'BYTE', 'Mbps') }} Mbps
             </el-row>
             <el-row v-else>Unlimited</el-row>
-          </template>           
+          </template>
         </el-table-column>
 
         <el-table-column
@@ -241,7 +241,7 @@
                   <el-input v-model="item.val"></el-input>
                 </el-col>
                 <el-col :span="12">
-                  <el-input v-model="item.note" placeholder="Remark"></el-input>
+                  <el-input v-model="item.note" placeholder="Note"></el-input>
                 </el-col>
                 <el-col :span="2">
                   <el-button size="mini" type="danger" icon="el-icon-minus" circle
@@ -264,7 +264,7 @@
                   <el-input v-model="item.val"></el-input>
                 </el-col>
                 <el-col :span="12">
-                  <el-input v-model="item.note" placeholder="Remark"></el-input>
+                  <el-input v-model="item.note" placeholder="Note"></el-input>
                 </el-col>
                 <el-col :span="2">
                   <el-button size="mini" type="danger" icon="el-icon-minus" circle
@@ -273,7 +273,7 @@
               </el-row>
             </el-form-item>
 
-            <el-form-item label="state" prop="status">
+            <el-form-item label="State" prop="status">
               <el-radio-group v-model="ruleForm.status">
                 <el-radio :label="1" border>Enable</el-radio>
                 <el-radio :label="0" border>Disable</el-radio>
@@ -314,7 +314,7 @@
               <el-form-item label="Administrator DN" prop="auth.ldap.bind_name"
                             :rules="this.ruleForm.auth.type== 'ldap' ? this.rules['auth.ldap.bind_name'] : [{ required: false }]">
                 <el-input v-model="ruleForm.auth.ldap.bind_name"
-                          placeholder="For example CN=bindadmin,DC=abc,DC=COM"></el-input>
+                          placeholder="For example: CN=bindadmin,DC=abc,DC=COM"></el-input>
               </el-form-item>
               <el-form-item label="Administrator password" prop="auth.ldap.bind_pwd"
                             :rules="this.ruleForm.auth.type== 'ldap' ? this.rules['auth.ldap.bind_pwd'] : [{ required: false }]">
@@ -322,27 +322,27 @@
               </el-form-item>
               <el-form-item label="Base DN" prop="auth.ldap.base_dn"
                             :rules="this.ruleForm.auth.type== 'ldap' ? this.rules['auth.ldap.base_dn'] : [{ required: false }]">
-                <el-input v-model="ruleForm.auth.ldap.base_dn" placeholder="For example DC=abc,DC=com"></el-input>
+                <el-input v-model="ruleForm.auth.ldap.base_dn" placeholder="例如 DC=abc,DC=com"></el-input>
               </el-form-item>
-              <el-form-item label="User Object Class" prop="auth.ldap.object_class"
+              <el-form-item label="User object class" prop="auth.ldap.object_class"
                             :rules="this.ruleForm.auth.type== 'ldap' ? this.rules['auth.ldap.object_class'] : [{ required: false }]">
                 <el-input v-model="ruleForm.auth.ldap.object_class"
-                          placeholder="For example person/user/posixAccount"></el-input>
+                          placeholder="For example: person / user / posixAccount"></el-input>
               </el-form-item>
               <el-form-item label="User unique ID" prop="auth.ldap.search_attr"
                             :rules="this.ruleForm.auth.type== 'ldap' ? this.rules['auth.ldap.search_attr'] : [{ required: false }]">
                 <el-input v-model="ruleForm.auth.ldap.search_attr"
-                          placeholder="For example sAMAccountName / uid / cn"></el-input>
+                          placeholder="For example: sAMAccountName / uid / cn"></el-input>
               </el-form-item>
-              <el-form-item label="Restricted User Groups" prop="auth.ldap.member_of">
+              <el-form-item label="Restricted user groups" prop="auth.ldap.member_of">
                 <el-input v-model="ruleForm.auth.ldap.member_of"
-                          placeholder="Optional, only allow the specified group to log in, for example CN=HomeWork,DC=abc,DC=com"></el-input>
+                          placeholder="Optional, only allow the specified group to log in, for example: CN=HomeWork,DC=abc,DC=com"></el-input>
               </el-form-item>
             </template>
           </el-tab-pane>
 
           <el-tab-pane label="Routing settings" name="route">
-            <el-form-item label="Included Routes" prop="route_include">
+            <el-form-item label="Included routes" prop="route_include">
               <el-row class="msg-info">
                 <el-col :span="18">Enter the CIDR format such as: 192.168.1.0/24</el-col>
                 <el-col :span="2">
@@ -361,7 +361,7 @@
                     <el-input v-model="item.val"></el-input>
                   </el-col>
                   <el-col :span="12">
-                    <el-input v-model="item.note" placeholder="Description"></el-input>
+                    <el-input v-model="item.note" placeholder="Note"></el-input>
                   </el-col>
                   <el-col :span="2">
                     <el-button size="mini" type="danger" icon="el-icon-minus" circle
@@ -371,7 +371,7 @@
               </templete>
             </el-form-item>
 
-            <el-form-item label="Exclude Routes" prop="route_exclude">
+            <el-form-item label="Exclude routes" prop="route_exclude">
               <el-row class="msg-info">
                 <el-col :span="18">Enter the CIDR format such as: 192.168.2.0/24</el-col>
                 <el-col :span="2">
@@ -390,7 +390,7 @@
                     <el-input v-model="item.val"></el-input>
                   </el-col>
                   <el-col :span="12">
-                    <el-input v-model="item.note" placeholder="Description"></el-input>
+                    <el-input v-model="item.note" placeholder="Note"></el-input>
                   </el-col>
                   <el-col :span="2">
                     <el-button size="mini" type="danger" icon="el-icon-minus" circle
@@ -400,8 +400,8 @@
               </templete>
             </el-form-item>
           </el-tab-pane>
-          <el-tab-pane label="Permission Control" name="link_acl">
-            <el-form-item label="Permission Control" prop="link_acl">
+          <el-tab-pane label="Permission control" name="link_acl">
+            <el-form-item label="Permission control" prop="link_acl">
               <el-row class="msg-info">
                 <el-col :span="22">Enter the CIDR format such as: 192.168.3.0/24
                   Protocol support all,tcp,udp,icmp
@@ -433,7 +433,7 @@
                 </el-col>
 
                 <el-col :span="3">
-                    <el-input placeholder="protocol" v-model="item.protocol">
+                    <el-input placeholder="Protocol" v-model="item.protocol">
                 </el-col>
 
                 <el-col :span="6">
@@ -441,7 +441,7 @@
                   <el-input v-model="item.port" placeholder="Multi-port, number separation"></el-input>
                 </el-col>
                 <el-col :span="3">
-                  <el-input v-model="item.note" placeholder="Remark"></el-input>
+                  <el-input v-model="item.note" placeholder="Note"></el-input>
                 </el-col>
 
                 <el-col :span="2">
@@ -454,7 +454,7 @@
             </el-form-item>
           </el-tab-pane>
 
-          <el-tab-pane label="Domain Split Tunneling" name="ds_domains">
+          <el-tab-pane label="Domain split tunneling" name="ds_domains">
             <el-form-item label="Include domain name" prop="ds_include_domains">
               <el-input type="textarea" :rows="5" v-model="ruleForm.ds_include_domains"
                         placeholder="Enter the domain name separated by , and by default it matches all subdomains, such as google.com, yahoo.com"></el-input>
@@ -484,11 +484,11 @@
         custom-class="valgin-dialog"
         center>
       <el-form :model="authLoginForm" :rules="authLoginRules" ref="authLoginForm" label-width="100px">
-        <el-form-item label="account" prop="name">
+        <el-form-item label="Account" prop="name">
           <el-input v-model="authLoginForm.name" ref="authLoginFormName"
                     @keydown.enter.native="testAuthLogin"></el-input>
         </el-form-item>
-        <el-form-item label="password" prop="pwd">
+        <el-form-item label="Password" prop="pwd">
           <el-input type="password" v-model="authLoginForm.pwd" @keydown.enter.native="testAuthLogin"></el-input>
         </el-form-item>
         <el-form-item>
@@ -500,12 +500,13 @@
     <!--Edit mode popup-->
     <el-dialog
         :close-on-click-modal="false"
-        title="Edit Mode"
+        title="Edit mode"
         :visible.sync="ipListDialog"
         width="650px"
         custom-class="valgin-dialog"
         center>
-        <el-form-item label="Routing Table" prop="ip_list">
+      <el-form ref="ipEditForm" label-width="80px">
+        <el-form-item label="Routing table" prop="ip_list">
           <el-input type="textarea" :rows="10" v-model="ipEditForm.ip_list"
                     placeholder="One route per line, for example: 192.168.1.0/24, note or 192.168.1.0/24"></el-input>
           <div class="msg-info">Current total
@@ -523,6 +524,7 @@
 </template>
 
 <script>
+import axios from "axios";
 import draggable from 'vuedraggable'
 
 export default {
@@ -559,7 +561,7 @@ export default {
           bind_name: "",
           bind_pwd: "",
         },
-      },          
+      },
       ruleForm: {
         bandwidth: 0,
         bandwidth_format: '0',
@@ -658,7 +660,7 @@ export default {
         //console.log(rdata);
       }).catch(error => {
         this.$message.error('Oh, request error');
-        console.log(error);
+        //console.log(error);
       });
     },
     handleEdit(row) {
@@ -679,7 +681,7 @@ export default {
         this.setAuthData(resp.data.data);
       }).catch(error => {
         this.$message.error('Oh, request error');
-        console.log(error);
+        //console.log(error);
       });
     },
     pageChange(p) {
@@ -698,11 +700,11 @@ export default {
         this.count = rdata.count
       }).catch(error => {
         this.$message.error('Oh, request error');
-        console.log(error);
+        //console.log(error);
       });
     },
     removeDomain(arr, index) {
-      //console.log(index)
+      console.log(index)
       if (index >= 0 && index < arr.length) {
         arr.splice(index, 1)
       }
@@ -719,7 +721,7 @@ export default {
     submitForm(formName) {
       this.$refs[formName].validate((valid) => {
         if (!valid) {
-          //console.log('Error submit!');
+          //console.log('error submit!!');
           return false;
         }
         this.ruleForm.bandwidth = this.convertBandwidth(this.ruleForm.bandwidth_format, 'Mbps', 'BYTE');
@@ -735,14 +737,14 @@ export default {
           //console.log(rdata);
         }).catch(error => {
           this.$message.error('Oh, request error');
-          console.log(error);
+          //console.log(error);
         });
       });
     },
     testAuthLogin() {
       this.$refs["authLoginForm"].validate((valid) => {
         if (!valid) {
-          console.log('error submit!!');
+          //console.log('error submit!!');
           return false;
         }
         this.authLoginLoading = true;
@@ -758,10 +760,10 @@ export default {
             this.$message.error(rdata.msg);
           }
           this.authLoginLoading = false;
-          console.log(rdata);
+          //console.log(rdata);
         }).catch(error => {
-          this.$message.error('Oops, request error');
-          console.log(error);
+          this.$message.error('Oh, request error');
+          //console.log(error);
           this.authLoginLoading = false;
         });
       });
@@ -769,13 +771,13 @@ export default {
     openAuthLoginDialog() {
       this.$refs["ruleForm"].validate((valid) => {
         if (!valid) {
-          //console.log('Error submit!');
+          //console.log('error submit!!');
           return false;
         }
         this.authLoginDialog = true;
         // set authLoginFormName focus
         this.$nextTick(() => {
-            this.$refs['authLoginFormName'].focus();
+          this.$refs['authLoginFormName'].focus();
         });
       });
     },
@@ -810,7 +812,7 @@ export default {
         }
         let valid = this.isValidCIDR(ip[0]);
         if (!valid.valid) {
-          this.$message.error("Error: CIDR format is incorrect, please suggest " + ip[0] + " change to " + valid.suggestion);
+          this.$message.error("Error: CIDR format is incorrect, it is recommended to change " + ip[0] + " to " + valid.suggestion);
           this.ipEditLoading = false;
           return;
         }
@@ -860,10 +862,10 @@ export default {
       var isSwitch = true
       if (!this.user_edit_dialog) {
         return isSwitch;
-      }      
+      }
       this.$refs['ruleForm'].validate((valid) => {
         if (!valid) {
-          this.$message.error("Error: You have omitted a required field.")
+          this.$message.error("Error: You have missed a required field.")
           isSwitch = false;
           return false;
         }
@@ -916,6 +918,7 @@ export default {
   max-height: calc(100% - 30px);
   max-width: calc(100% - 30px);
 }
+
 ::v-deep .valgin-dialog .el-dialog__body {
   flex: 1;
   overflow: auto;

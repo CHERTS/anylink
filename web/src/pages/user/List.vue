@@ -3,7 +3,7 @@
     <el-card>
       <el-form :inline="true">
         <el-form-item>
-          <el-button size="small" type="primary" icon="el-icon-plus" @click="handleEdit('')">Add to
+          <el-button size="small" type="primary" icon="el-icon-plus" @click="handleEdit('')">Add
           </el-button>
         </el-form-item>
         <el-form-item>
