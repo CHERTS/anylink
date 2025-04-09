@@ -14,13 +14,13 @@ func TestGetGroupNames(t *testing.T) {
 	defer closeIpdata()
 
 	// Add group
-	g1 := Group{Name: "g1", ClientDns: []ValData{{Val: "114.114.114.114"}}}
+	g1 := Group{Name: "g1", ClientDns: []ValData{{Val: "1.1.1.1"}}}
 	err := SetGroup(&g1)
 	ast.Nil(err)
-	g2 := Group{Name: "g2", ClientDns: []ValData{{Val: "114.114.114.114"}}}
+	g2 := Group{Name: "g2", ClientDns: []ValData{{Val: "1.1.1.1"}}}
 	err = SetGroup(&g2)
 	ast.Nil(err)
-	g3 := Group{Name: "g3", ClientDns: []ValData{{Val: "114.114.114.114"}}}
+	g3 := Group{Name: "g3", ClientDns: []ValData{{Val: "1.1.1.1"}}}
 	err = SetGroup(&g3)
 	ast.Nil(err)
 
@@ -31,15 +31,15 @@ func TestGetGroupNames(t *testing.T) {
 			"secret": "43214132",
 		},
 	}
-	g4 := Group{Name: "g4", ClientDns: []ValData{{Val: "114.114.114.114"}}, Auth: authData}
+	g4 := Group{Name: "g4", ClientDns: []ValData{{Val: "1.1.1.1"}}, Auth: authData}
 	err = SetGroup(&g4)
 	ast.Nil(err)
-	g5 := Group{Name: "g5", ClientDns: []ValData{{Val: "114.114.114.114"}}, DsIncludeDomains: "google.com,github.com"}
+	g5 := Group{Name: "g5", ClientDns: []ValData{{Val: "1.1.1.1"}}, DsIncludeDomains: "google.com,github.com"}
 	err = SetGroup(&g5)
 	if ast.NotNil(err) {
 		ast.Equal("Default route, setting \"include domain name\" is not allowed, please reconfigure it.", err.Error())
 	}
-	g6 := Group{Name: "g6", ClientDns: []ValData{{Val: "114.114.114.114"}}, DsExcludeDomains: "facebook.com,yahoo.com"}
+	g6 := Group{Name: "g6", ClientDns: []ValData{{Val: "1.1.1.1"}}, DsExcludeDomains: "facebook.com,yahoo.com"}
 	err = SetGroup(&g6)
 	ast.Nil(err)
 
@@ -56,7 +56,7 @@ func TestGetGroupNames(t *testing.T) {
 			"member_of":    "cn=vpn,cn=user,dc=abc,dc=com",
 		},
 	}
-	g7 := Group{Name: "g7", ClientDns: []ValData{{Val: "114.114.114.114"}}, Auth: authData}
+	g7 := Group{Name: "g7", ClientDns: []ValData{{Val: "1.1.1.1"}}, Auth: authData}
 	err = SetGroup(&g7)
 	ast.Nil(err)
 

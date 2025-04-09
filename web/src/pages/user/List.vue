@@ -61,10 +61,10 @@
           </template>
         </el-table-column>
 
-        <el-table-column prop="status" label="State" width="70">
+        <el-table-column prop="status" label="State" width="80">
           <template slot-scope="scope">
-            <el-tag v-if="scope.row.status === 1" type="success">Available</el-tag>
-            <el-tag v-if="scope.row.status === 0" type="danger">Deactivate</el-tag>
+            <el-tag v-if="scope.row.status === 1" type="success">Enabled</el-tag>
+            <el-tag v-if="scope.row.status === 0" type="danger">Disabled</el-tag>
             <el-tag v-if="scope.row.status === 2">Expired</el-tag>
           </template>
         </el-table-column>
@@ -169,7 +169,7 @@
         <el-form-item>
           <el-button type="primary" @click="submitForm('ruleForm')">Save</el-button>
           <!--          <el-button @click="resetForm('ruleForm')">Reset</el-button>-->
-          <el-button @click="disVisible">取消</el-button>
+          <el-button @click="disVisible">Cancel</el-button>
         </el-form-item>
       </el-form>
 

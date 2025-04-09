@@ -17,7 +17,7 @@ func TestCheckUser(t *testing.T) {
 	group := "group1"
 
 	// add a group
-	dns := []ValData{{Val: "114.114.114.114"}}
+	dns := []ValData{{Val: "1.1.1.1"}}
 	route := []ValData{{Val: "192.168.1.0/24"}}
 	g := Group{Name: group, Status: 1, ClientDns: dns, RouteInclude: route}
 	err := SetGroup(&g)

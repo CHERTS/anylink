@@ -48,7 +48,7 @@
         <el-table-column
             prop="bandwidth"
             label="Bandwidth"
-            width="90">
+            width="100">
           <template slot-scope="scope">
             <el-row v-if="scope.row.bandwidth > 0">{{ convertBandwidth(scope.row.bandwidth, 'BYTE', 'Mbps') }} Mbps
             </el-row>
@@ -191,7 +191,7 @@
         :close-on-click-modal="false"
         title="Adding user group"
         :visible.sync="user_edit_dialog"
-        width="850px"
+        width="950px"
         @close='closeDialog'
         center>
 
@@ -206,7 +206,7 @@
               <el-input v-model="ruleForm.name" :disabled="ruleForm.id > 0"></el-input>
             </el-form-item>
 
-            <el-form-item label="Remark" prop="note">
+            <el-form-item label="Note" prop="note">
               <el-input v-model="ruleForm.note"></el-input>
             </el-form-item>
 
@@ -290,7 +290,7 @@
               </el-radio-group>
             </el-form-item>
             <template v-if="ruleForm.auth.type == 'radius'">
-              <el-form-item label="Server address" prop="auth.radius.addr"
+              <el-form-item label="Server" prop="auth.radius.addr"
                             :rules="this.ruleForm.auth.type== 'radius' ? this.rules['auth.radius.addr'] : [{ required: false }]">
                 <el-input v-model="ruleForm.auth.radius.addr" placeholder="For example ip:1812"></el-input>
               </el-form-item>
@@ -304,19 +304,19 @@
             </template>
 
             <template v-if="ruleForm.auth.type == 'ldap'">
-              <el-form-item label="Server address" prop="auth.ldap.addr"
+              <el-form-item label="Server" prop="auth.ldap.addr"
                             :rules="this.ruleForm.auth.type== 'ldap' ? this.rules['auth.ldap.addr'] : [{ required: false }]">
                 <el-input v-model="ruleForm.auth.ldap.addr" placeholder="For example, ip:389 / domain name:389"></el-input>
               </el-form-item>
               <el-form-item label="Enable TLS" prop="auth.ldap.tls">
                 <el-switch v-model="ruleForm.auth.ldap.tls"></el-switch>
               </el-form-item>
-              <el-form-item label="Administrator DN" prop="auth.ldap.bind_name"
+              <el-form-item label="Admin DN" prop="auth.ldap.bind_name"
                             :rules="this.ruleForm.auth.type== 'ldap' ? this.rules['auth.ldap.bind_name'] : [{ required: false }]">
                 <el-input v-model="ruleForm.auth.ldap.bind_name"
                           placeholder="For example: CN=bindadmin,DC=abc,DC=COM"></el-input>
               </el-form-item>
-              <el-form-item label="Administrator password" prop="auth.ldap.bind_pwd"
+              <el-form-item label="Admin password" prop="auth.ldap.bind_pwd"
                             :rules="this.ruleForm.auth.type== 'ldap' ? this.rules['auth.ldap.bind_pwd'] : [{ required: false }]">
                 <el-input type="password" v-model="ruleForm.auth.ldap.bind_pwd" placeholder=""></el-input>
               </el-form-item>
@@ -567,7 +567,7 @@ export default {
         bandwidth_format: '0',
         status: 1,
         allow_lan: true,
-        client_dns: [{val: '114.114.114.114', note: 'Default DNS'}],
+        client_dns: [{val: '1.1.1.1', note: 'Default DNS'}],
         split_dns: [],
         route_include: [{val: 'all', note: 'Default global proxy'}],
         route_exclude: [],

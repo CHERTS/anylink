@@ -148,7 +148,7 @@ func addInitData() error {
 	g1 := Group{
 		Name:         "all",
 		AllowLan:     true,
-		ClientDns:    []ValData{{Val: "114.114.114.114"}},
+		ClientDns:    []ValData{{Val: "1.1.1.1"}},
 		RouteInclude: []ValData{{Val: ALL}},
 		Status:       1,
 	}
@@ -160,7 +160,7 @@ func addInitData() error {
 	g2 := Group{
 		Name:         "ops",
 		AllowLan:     true,
-		ClientDns:    []ValData{{Val: "114.114.114.114"}},
+		ClientDns:    []ValData{{Val: "1.1.1.1"}},
 		RouteInclude: []ValData{{Val: "10.0.0.0/8"}},
 		Status:       1,
 	}
