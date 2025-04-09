@@ -58,7 +58,7 @@ export default {
                     this.locksInfo = response.data.data;
                 })
                 .catch(error => {
-                    //console.error('Failed to get locks info:', error);
+                    console.error('Failed to get locks info: ', error);
                     this.$message.error('Unable to obtain lock information, please try again later.');
                 });
         },
@@ -76,7 +76,7 @@ export default {
                     this.getLocks();
                 })
                 .catch(error => {
-                    //console.error('Failed to unlock:', error);
+                    console.error('Failed to unlock: ', error);
                     this.$message.error('Unlock failed, please try again later.');
                 });
         },
