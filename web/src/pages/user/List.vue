@@ -221,7 +221,7 @@ export default {
           { required: true, message: 'Please enter your user name', trigger: 'blur' }
         ],
         email: [
-          { required: true, message: 'Please enter the user's email address', trigger: 'blur' },
+          { required: true, message: 'Please enter the user email address', trigger: 'blur' },
           { type: 'email', message: 'Please enter a valid email address', trigger: ['blur', 'change'] }
         ],
         password: [
